@@ -322,3 +322,106 @@ class Appointment(models.Model):
             minutes=self.procedure.duration_minutes
         )
         self.save()
+
+    def get_or_create_details(self):
+        return AppointmentDetails.objects.get_or_create(appointment=self)[0]
+
+
+class AppointmentDetails(models.Model):
+    appointment = models.OneToOneField(
+        Appointment,
+        on_delete=models.CASCADE,
+        related_name='details'
+    )
+    notes = models.TextField(blank=True)
+    diagnosis = models.TextField(blank=True)
+    prescription = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Detalhes da Consulta"
+        verbose_name_plural = "Detalhes das Consultas"
+
+    def __str__(self):
+        return f"Detalhes - {self.appointment}"
+
+    def update_notes(self, notes):
+        self.notes = notes
+        self.save()
+
+    def update_diagnosis(self, diagnosis):
+        self.diagnosis = diagnosis
+        self.save()
+
+    def add_prescription(self, prescription):
+        self.prescription = prescription
+        self.save()
+
+
+class PaymentStatus(models.IntegerChoices):
+    PENDING = 1, 'Pendente'
+    PAID = 2, 'Pago'
+    REFUNDED = 3, 'Estornado'
+
+
+class PaymentMethod(models.IntegerChoices):
+    CASH = 1, 'Dinheiro'
+    CREDIT_CARD = 2, 'Cartão de Crédito'
+    DEBIT_CARD = 3, 'Cartão de Débito'
+
+
+class Payment(models.Model):
+    appointment = models.ForeignKey(
+        Appointment,
+        on_delete=models.CASCADE,
+        related_name='payments'
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateTimeField(null=True, blank=True)
+    method = models.IntegerField(
+        choices=PaymentMethod.choices,
+        default=PaymentMethod.CASH
+    )
+    status = models.IntegerField(
+        choices=PaymentStatus.choices,
+        default=PaymentStatus.PENDING
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Pagamento"
+        verbose_name_plural = "Pagamentos"
+
+    def __str__(self):
+        return (
+            f"{self.get_status_display()} - "
+            f"R$ {self.amount} ({self.get_method_display()})"
+        )
+
+    def clean(self):
+        if self.status == PaymentStatus.REFUNDED:
+            return
+        existing_total = self.appointment.payments.exclude(
+            pk=self.pk
+        ).exclude(
+            status=PaymentStatus.REFUNDED
+        ).aggregate(
+            total=models.Sum('amount')
+        )['total'] or 0
+        if existing_total + self.amount > self.appointment.procedure.price:
+            raise ValidationError(
+                "A soma dos pagamentos não pode ultrapassar "
+                "o valor do procedimento."
+            )
+
+    def mark_as_paid(self):
+        self.status = PaymentStatus.PAID
+        if not self.payment_date:
+            self.payment_date = timezone.now()
+        self.save()
+
+    def mark_as_refunded(self):
+        self.status = PaymentStatus.REFUNDED
+        self.save()
+
+    def is_paid(self):
+        return self.status == PaymentStatus.PAID

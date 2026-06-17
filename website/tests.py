@@ -1,41 +1,33 @@
 from datetime import date, datetime, time, timedelta
-
+from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth.models import User
-from website.models import (
-    Procedure,
-    Dentist,
-    Patient,
-    WeeklySchedule,
-    DayOff,
-    DayOfWeek,
-    Schedule,
-    Appointment,
-    AppointmentStatus,
-)
+from website.models import *
+
+_TEST_USER_PASSWORD = "123"
 
 
 class ModelTests(TestCase):
     @staticmethod
     def _create_dentist(username, first_name, license_number):
         user = User.objects.create_user(
-            username=username, first_name=first_name, password="123"
+            username=username, first_name=first_name, password=_TEST_USER_PASSWORD
         )
         return Dentist.objects.create(user=user, license_number=license_number)
 
     @staticmethod
     def _create_patient(username, first_name, phone):
         user = User.objects.create_user(
-            username=username, first_name=first_name, password="123"
+            username=username, first_name=first_name, password=_TEST_USER_PASSWORD
         )
         return Patient.objects.create(user=user, phone_number=phone)
 
     @staticmethod
-    def _create_procedure(name, duration):
+    def _create_procedure(name, duration, price=Decimal('100.00')):
         return Procedure.objects.create(
-            name=name, price=100.00, duration_minutes=duration
+            name=name, price=price, duration_minutes=duration
         )
 
     @staticmethod
@@ -58,7 +50,7 @@ class ModelTests(TestCase):
 
     def test_create_dentist(self):
         user = User.objects.create_user(
-            username="drjoao", first_name="João", password="123"
+            username="drjoao", first_name="João", password=_TEST_USER_PASSWORD
         )
         dentist = Dentist.objects.create(
             user=user, license_number="12345", specialty="Ortodontia"
@@ -67,7 +59,7 @@ class ModelTests(TestCase):
 
     def test_create_patient(self):
         user = User.objects.create_user(
-            username="maria", first_name="Maria", password="123"
+            username="maria", first_name="Maria", password=_TEST_USER_PASSWORD
         )
         patient = Patient.objects.create(
             user=user, phone_number="11999999999"
@@ -322,3 +314,144 @@ class ModelTests(TestCase):
         dentist.regenerate_schedules(date(2026, 7, 13), date(2026, 7, 13))
         appointment.refresh_from_db()
         self.assertEqual(appointment.status, AppointmentStatus.COMPLETED)
+
+    # --- AppointmentDetails ---
+
+    def test_get_or_create_details(self):
+        dentist = self._create_dentist("drluis", "Luís", "33333")
+        patient = self._create_patient("paula", "Paula", "55555555555")
+        procedure = self._create_procedure("Limpeza", 45)
+        self._create_schedule(dentist, 9, 18)
+        appointment = Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
+            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
+        )
+        details = appointment.get_or_create_details()
+        self.assertIsInstance(details, AppointmentDetails)
+        self.assertEqual(details.appointment, appointment)
+
+    def test_update_details(self):
+        dentist = self._create_dentist("drluis2", "Luís", "33334")
+        patient = self._create_patient("paula2", "Paula", "55555555556")
+        procedure = self._create_procedure("Limpeza", 45)
+        self._create_schedule(dentist, 9, 18)
+        appointment = Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
+            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
+        )
+        details = appointment.get_or_create_details()
+        details.update_notes("Paciente sem queixas.")
+        details.update_diagnosis("Saudável.")
+        details.add_prescription("Nenhuma.")
+        details.refresh_from_db()
+        self.assertEqual(details.notes, "Paciente sem queixas.")
+        self.assertEqual(details.diagnosis, "Saudável.")
+        self.assertEqual(details.prescription, "Nenhuma.")
+
+    # --- Payment ---
+
+    def test_create_payment(self):
+        dentist = self._create_dentist("drluis3", "Luís", "33335")
+        patient = self._create_patient("paula3", "Paula", "55555555557")
+        procedure = self._create_procedure("Limpeza", 45, Decimal('150.00'))
+        self._create_schedule(dentist, 9, 18)
+        appointment = Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
+            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
+        )
+        payment = Payment.objects.create(
+            appointment=appointment,
+            amount=Decimal('150.00'),
+            method=PaymentMethod.CASH,
+        )
+        self.assertEqual(payment.status, PaymentStatus.PENDING)
+
+    def test_multiple_payments_ok(self):
+        dentist = self._create_dentist("drluis4", "Luís", "33336")
+        patient = self._create_patient("paula4", "Paula", "55555555558")
+        procedure = self._create_procedure("Canal", 90, Decimal('800.00'))
+        self._create_schedule(dentist, 9, 18)
+        appointment = Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
+            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
+        )
+        Payment.objects.create(
+            appointment=appointment, amount=Decimal('400.00'), method=PaymentMethod.CASH,
+            status=PaymentStatus.PAID,
+        )
+        second = Payment(
+            appointment=appointment, amount=Decimal('400.00'), method=PaymentMethod.CREDIT_CARD,
+        )
+        second.clean()
+
+    def test_payment_exceeds_limit(self):
+        dentist = self._create_dentist("drluis5", "Luís", "33337")
+        patient = self._create_patient("paula5", "Paula", "55555555559")
+        procedure = self._create_procedure("Limpeza", 45, Decimal('150.00'))
+        self._create_schedule(dentist, 9, 18)
+        appointment = Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
+            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
+        )
+        Payment.objects.create(
+            appointment=appointment, amount=Decimal('100.00'), method=PaymentMethod.CASH,
+            status=PaymentStatus.PAID,
+        )
+        second = Payment(
+            appointment=appointment, amount=Decimal('100.00'), method=PaymentMethod.CASH,
+        )
+        with self.assertRaises(ValidationError):
+            second.clean()
+
+    def test_payment_mark_as_paid(self):
+        dentist = self._create_dentist("drluis6", "Luís", "33338")
+        patient = self._create_patient("paula6", "Paula", "55555555560")
+        procedure = self._create_procedure("Limpeza", 45, Decimal('150.00'))
+        self._create_schedule(dentist, 9, 18)
+        appointment = Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
+            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
+        )
+        payment = Payment.objects.create(
+            appointment=appointment, amount=Decimal('150.00'), method=PaymentMethod.CASH,
+        )
+        payment.mark_as_paid()
+        self.assertEqual(payment.status, PaymentStatus.PAID)
+        self.assertIsNotNone(payment.payment_date)
+
+    def test_payment_mark_as_refunded(self):
+        dentist = self._create_dentist("drluis7", "Luís", "33339")
+        patient = self._create_patient("paula7", "Paula", "55555555561")
+        procedure = self._create_procedure("Limpeza", 45, Decimal('150.00'))
+        self._create_schedule(dentist, 9, 18)
+        appointment = Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
+            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
+        )
+        payment = Payment.objects.create(
+            appointment=appointment, amount=Decimal('150.00'), method=PaymentMethod.CASH,
+            status=PaymentStatus.PAID,
+        )
+        payment.mark_as_refunded()
+        self.assertEqual(payment.status, PaymentStatus.REFUNDED)

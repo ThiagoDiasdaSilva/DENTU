@@ -7,6 +7,8 @@ from .models import (
     DayOff,
     Schedule,
     Appointment,
+    AppointmentDetails,
+    Payment,
 )
 
 
@@ -62,3 +64,15 @@ class AppointmentAdmin(admin.ModelAdmin):
         'dentist__user__first_name',
         'dentist__user__last_name',
     )
+
+
+@admin.register(AppointmentDetails)
+class AppointmentDetailsAdmin(admin.ModelAdmin):
+    list_display = ('appointment', 'notes', 'diagnosis', 'prescription')
+    search_fields = ('appointment__dentist__user__first_name',)
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('appointment', 'amount', 'method', 'status', 'payment_date')
+    list_filter = ('status', 'method')
