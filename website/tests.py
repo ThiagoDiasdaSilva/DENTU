@@ -1,5 +1,6 @@
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+import json
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
@@ -455,3 +456,71 @@ class ModelTests(TestCase):
         )
         payment.mark_as_refunded()
         self.assertEqual(payment.status, PaymentStatus.REFUNDED)
+
+    # --- get_available_slots ---
+
+    def test_get_available_slots(self):
+        dentist = self._create_dentist("drclara", "Clara", "66661")
+        procedure = self._create_procedure("Limpeza", 45)
+        WeeklySchedule.objects.create(
+            dentist=dentist,
+            day_of_week=DayOfWeek.MONDAY,
+            start_time=time(8, 0),
+            end_time=time(12, 0),
+        )
+        # 2026-07-13 is a Monday
+        dentist.generate_schedules(date(2026, 7, 13), date(2026, 7, 13))
+        slots = dentist.get_available_slots(
+            procedure, date(2026, 7, 13), date(2026, 7, 13)
+        )
+        # 4h window / 45 min slots = 5 slots (8:00, 8:45, 9:30, 10:15, 11:00)
+        self.assertEqual(len(slots), 5)
+        self.assertEqual(slots[0][0].hour, 8)
+        self.assertEqual(slots[-1][0].hour, 11)
+
+    def test_get_available_slots_excludes_booked(self):
+        dentist = self._create_dentist("drclara2", "Clara", "66662")
+        patient = self._create_patient("p_slots", "Paciente", "00000000000")
+        procedure = self._create_procedure("Limpeza", 45)
+        WeeklySchedule.objects.create(
+            dentist=dentist,
+            day_of_week=DayOfWeek.MONDAY,
+            start_time=time(8, 0),
+            end_time=time(10, 0),
+        )
+        # 2026-07-13 is a Monday
+        dentist.generate_schedules(date(2026, 7, 13), date(2026, 7, 13))
+        # Book the 8:00 - 8:45 slot
+        sched = dentist.schedules.first()
+        Appointment.objects.create(
+            dentist=dentist,
+            patient=patient,
+            procedure=procedure,
+            start_datetime=sched.start_datetime,
+            end_datetime=sched.start_datetime + timedelta(minutes=45),
+        )
+        slots = dentist.get_available_slots(
+            procedure, date(2026, 7, 13), date(2026, 7, 13)
+        )
+        # 2h window = 2 slots (8:00, 8:45) minus booked slot = 1
+        self.assertEqual(len(slots), 1)
+        self.assertEqual(slots[0][0].hour, 8)
+        self.assertEqual(slots[0][0].minute, 45)
+
+    def test_available_slots_endpoint(self):
+        dentist = self._create_dentist("drclara3", "Clara", "66663")
+        procedure = self._create_procedure("Limpeza", 45)
+        today = date.today()
+        sched_start = timezone.make_aware(datetime(today.year, today.month, today.day, 8, 0))
+        sched_end = timezone.make_aware(datetime(today.year, today.month, today.day, 12, 0))
+        Schedule.objects.create(dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
+        resp = self.client.get('/appointment/slots/', {
+            'dentist': dentist.id,
+            'procedure': procedure.id,
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        self.assertIn('slots', data)
+        self.assertEqual(len(data['slots']), 5)
+        self.assertIn('value', data['slots'][0])
+        self.assertIn('label', data['slots'][0])

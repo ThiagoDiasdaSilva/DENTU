@@ -105,6 +105,27 @@ class Dentist(models.Model):
 
         return self.generate_schedules(start_date, end_date)
 
+    def get_available_slots(self, procedure, start_date, end_date):
+        slots = []
+        slot_duration = timedelta(minutes=procedure.duration_minutes)
+        schedules = self.schedules.filter(
+            start_datetime__date__gte=start_date,
+            start_datetime__date__lte=end_date,
+        ).order_by('start_datetime')
+        for schedule in schedules:
+            current = schedule.start_datetime
+            while current + slot_duration <= schedule.end_datetime:
+                slot_end = current + slot_duration
+                has_conflict = Appointment.objects.filter(
+                    dentist=self,
+                    start_datetime__lt=slot_end,
+                    end_datetime__gt=current,
+                ).exclude(status=AppointmentStatus.CANCELED).exists()
+                if not has_conflict:
+                    slots.append((current, slot_end))
+                current = current + slot_duration
+        return slots
+
 
 class Patient(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -264,6 +285,8 @@ class Appointment(models.Model):
         )
 
     def clean(self):
+        if self.start_datetime is None or self.end_datetime is None:
+            return
         if self.end_datetime <= self.start_datetime:
             raise ValidationError(
                 "O horário de término deve ser posterior ao início."
