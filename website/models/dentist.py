@@ -92,6 +92,9 @@ class Dentist(models.Model):
             current = schedule.start_datetime
             while current + slot_duration <= schedule.end_datetime:
                 slot_end = current + slot_duration
+                if current <= timezone.now():
+                    current = current + slot_duration
+                    continue
                 has_conflict = Appointment.objects.filter(
                     dentist=self,
                     start_datetime__lt=slot_end,

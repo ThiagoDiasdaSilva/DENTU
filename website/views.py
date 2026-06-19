@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from django.http import JsonResponse
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -125,8 +126,8 @@ def available_slots(request):
 
     data = [
         {
-            'value': slot[0].strftime('%Y-%m-%d %H:%M:%S'),
-            'label': slot[0].strftime('%d/%m %H:%M') + ' às ' + slot[1].strftime('%H:%M'),
+            'value': timezone.localtime(slot[0]).strftime('%Y-%m-%d %H:%M:%S'),
+            'label': timezone.localtime(slot[0]).strftime('%d/%m %H:%M') + ' às ' + timezone.localtime(slot[1]).strftime('%H:%M'),
         }
         for slot in slots
     ]
