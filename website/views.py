@@ -1,12 +1,10 @@
 from datetime import date, timedelta
-
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.conf import settings
-
 from website.forms import AppointmentForm
 from website.models import Appointment, Dentist, Patient, Procedure
 
