@@ -1,7 +1,6 @@
 from django import forms
-from django.utils import timezone
 
-from website.models import Dentist, Procedure
+from website.models import Dentist, Procedure, PaymentMethod
 
 
 class AppointmentForm(forms.Form):
@@ -19,3 +18,13 @@ class AppointmentForm(forms.Form):
         label="Horário",
         input_formats=['%Y-%m-%d %H:%M:%S'],
     )
+    payment_method = forms.ChoiceField(
+        choices=[('', 'Selecione uma forma de pagamento')] + list(PaymentMethod.choices),
+        label="Forma de pagamento",
+    )
+
+    def clean_payment_method(self):
+        value = self.cleaned_data.get('payment_method')
+        if not value:
+            raise forms.ValidationError("Selecione uma forma de pagamento.")
+        return int(value)

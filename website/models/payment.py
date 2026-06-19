@@ -6,10 +6,10 @@ from website.models.enums import PaymentMethod, PaymentStatus
 
 
 class Payment(models.Model):
-    appointment = models.ForeignKey(
+    appointment = models.OneToOneField(
         'Appointment',
         on_delete=models.CASCADE,
-        related_name='payments'
+        related_name='payment'
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_date = models.DateTimeField(null=True, blank=True)
@@ -36,16 +36,9 @@ class Payment(models.Model):
     def clean(self):
         if self.status == PaymentStatus.REFUNDED:
             return
-        existing_total = self.appointment.payments.exclude(
-            pk=self.pk
-        ).exclude(
-            status=PaymentStatus.REFUNDED
-        ).aggregate(
-            total=models.Sum('amount')
-        )['total'] or 0
-        if existing_total + self.amount > self.appointment.procedure.price:
+        if self.amount > self.appointment.procedure.price:
             raise ValidationError(
-                "A soma dos pagamentos não pode ultrapassar "
+                "O valor do pagamento não pode ultrapassar "
                 "o valor do procedimento."
             )
 

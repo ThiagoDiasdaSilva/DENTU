@@ -106,26 +106,42 @@
           {% endif %}
 
           <div class="form-group mb-30">
-            <label for="{{ form.dentist.id_for_label }}"><strong>1. Escolha o dentista:</strong></label>
-            {{ form.dentist }}
-            {% if form.dentist.errors %}
-            <small class="text-danger">{{ form.dentist.errors }}</small>
-            {% endif %}
+            <label for="id_dentist"><strong>1. Escolha o dentista:</strong></label>
+            <select name="dentist" id="id_dentist" class="form-control">
+              <option value="">Selecione um dentista</option>
+              {% for d in form.dentist.field.queryset %}
+              <option value="{{ d.id }}" {% if form.dentist.value|add:"0" == d.id %}selected{% endif %}>
+                {{ d }}
+              </option>
+              {% endfor %}
+            </select>
           </div>
 
           <div class="form-group mb-30">
-            <label for="{{ form.procedure.id_for_label }}"><strong>2. Escolha o procedimento:</strong></label>
-            {{ form.procedure }}
-            {% if form.procedure.errors %}
-            <small class="text-danger">{{ form.procedure.errors }}</small>
-            {% endif %}
+            <label for="id_procedure"><strong>2. Escolha o procedimento:</strong></label>
+            <select name="procedure" id="id_procedure" class="form-control" disabled>
+              <option value="">Selecione um dentista primeiro</option>
+              {% for proc in procedures %}
+              <option value="{{ proc.id }}" data-price="{{ proc.price }}">
+                {{ proc.name }} - R$ {{ proc.price }}
+              </option>
+              {% endfor %}
+            </select>
+            <div id="procedure-price" class="mt-2" style="display:none;">
+              <strong>Valor do procedimento:</strong> <span id="price-display"></span>
+            </div>
           </div>
 
           <div class="form-group mb-30">
             <label for="id_start_datetime"><strong>3. Escolha o horário:</strong></label>
             <select name="start_datetime" id="id_start_datetime" class="form-control" disabled>
-              <option value="">Selecione um dentista e procedimento primeiro</option>
+              <option value="">Selecione um procedimento primeiro</option>
             </select>
+          </div>
+
+          <div class="form-group mb-30">
+            <label for="id_payment_method"><strong>4. Escolha a forma de pagamento:</strong></label>
+            {{ form.payment_method }}
           </div>
 
           <div class="col-12 text-center">
@@ -152,12 +168,15 @@
   var dentistSelect = document.getElementById('id_dentist');
   var procedureSelect = document.getElementById('id_procedure');
   var slotSelect = document.getElementById('id_start_datetime');
+  var paymentMethodSelect = document.getElementById('id_payment_method');
   var submitBtn = document.getElementById('submit-btn');
   var loadingDiv = document.getElementById('loading-slots');
+  var priceDiv = document.getElementById('procedure-price');
+  var priceDisplay = document.getElementById('price-display');
 
-  // Disable procedimento and horario initially
   if (procedureSelect) procedureSelect.disabled = true;
   if (slotSelect) slotSelect.disabled = true;
+  if (paymentMethodSelect) paymentMethodSelect.disabled = true;
 
   function resetSelect(select, defaultText) {
     select.innerHTML = '';
@@ -170,7 +189,6 @@
 
   function fetchSlots(dentistId, procedureId) {
     if (!dentistId || !procedureId) return;
-
     if (loadingDiv) loadingDiv.style.display = 'block';
     if (submitBtn) submitBtn.disabled = true;
 
@@ -178,8 +196,8 @@
       .then(function(response) { return response.json(); })
       .then(function(data) {
         if (loadingDiv) loadingDiv.style.display = 'none';
-
         if (!slotSelect) return;
+
         slotSelect.innerHTML = '';
         var defaultOpt = document.createElement('option');
         defaultOpt.value = '';
@@ -194,7 +212,6 @@
             slotSelect.appendChild(opt);
           }
         }
-
         if (data.slots && data.slots.length > 0) {
           slotSelect.disabled = false;
         } else {
@@ -222,6 +239,11 @@
         slotSelect.disabled = true;
         resetSelect(slotSelect, 'Selecione um procedimento primeiro');
       }
+      if (priceDiv) priceDiv.style.display = 'none';
+      if (paymentMethodSelect) {
+        paymentMethodSelect.disabled = true;
+        paymentMethodSelect.value = '';
+      }
       if (submitBtn) submitBtn.disabled = true;
     });
   }
@@ -229,6 +251,15 @@
   // Step 2: procedure selected
   if (procedureSelect) {
     procedureSelect.addEventListener('change', function() {
+      var selected = procedureSelect.options[procedureSelect.selectedIndex];
+      if (selected && selected.dataset.price && priceDiv && priceDisplay) {
+        var price = parseFloat(selected.dataset.price).toFixed(2);
+        priceDisplay.textContent = 'R$ ' + price;
+        priceDiv.style.display = 'block';
+      } else {
+        if (priceDiv) priceDiv.style.display = 'none';
+      }
+
       var dId = dentistSelect ? dentistSelect.value : '';
       var pId = procedureSelect.value;
       if (dId && pId) {
@@ -246,8 +277,26 @@
   // Step 3: slot selected
   if (slotSelect) {
     slotSelect.addEventListener('change', function() {
+      if (slotSelect.value) {
+        if (paymentMethodSelect) {
+          paymentMethodSelect.disabled = false;
+        }
+        if (submitBtn) submitBtn.disabled = true;
+      } else {
+        if (paymentMethodSelect) {
+          paymentMethodSelect.disabled = true;
+          paymentMethodSelect.value = '';
+        }
+        if (submitBtn) submitBtn.disabled = true;
+      }
+    });
+  }
+
+  // Step 4: payment method selected
+  if (paymentMethodSelect) {
+    paymentMethodSelect.addEventListener('change', function() {
       if (submitBtn) {
-        submitBtn.disabled = !slotSelect.value;
+        submitBtn.disabled = !paymentMethodSelect.value;
       }
     });
   }

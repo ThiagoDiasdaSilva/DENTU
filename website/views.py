@@ -6,7 +6,10 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.conf import settings
 from website.forms import AppointmentForm
-from website.models import Appointment, Dentist, Patient, Procedure
+from website.models import (
+    Appointment, Dentist, Patient, Procedure,
+    Payment, PaymentMethod, PaymentStatus,
+)
 
 
 def index(request):
@@ -84,6 +87,12 @@ def appointment(request):
                 form.add_error(None, e)
             else:
                 appointment_obj.save()
+                Payment.objects.create(
+                    appointment=appointment_obj,
+                    amount=appointment_obj.procedure.price,
+                    method=form.cleaned_data['payment_method'],
+                    status=PaymentStatus.PENDING,
+                )
                 messages.success(request, "Consulta agendada com sucesso!")
                 return redirect('appointment')
     else:
@@ -92,6 +101,8 @@ def appointment(request):
     return render(request, 'appointment.html', {
         'form': form,
         'patient': patient,
+        'procedures': Procedure.objects.all(),
+        'payment_method_choices': PaymentMethod.choices,
     })
 
 

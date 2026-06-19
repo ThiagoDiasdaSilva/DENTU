@@ -376,27 +376,6 @@ class ModelTests(TestCase):
         )
         self.assertEqual(payment.status, PaymentStatus.PENDING)
 
-    def test_multiple_payments_ok(self):
-        dentist = self._create_dentist("drluis4", "Luís", "33336")
-        patient = self._create_patient("paula4", "Paula", "55555555558")
-        procedure = self._create_procedure("Canal", 90, Decimal('800.00'))
-        self._create_schedule(dentist, 9, 18)
-        appointment = Appointment.objects.create(
-            dentist=dentist,
-            patient=patient,
-            procedure=procedure,
-            start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
-            end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
-        )
-        Payment.objects.create(
-            appointment=appointment, amount=Decimal('400.00'), method=PaymentMethod.CASH,
-            status=PaymentStatus.PAID,
-        )
-        second = Payment(
-            appointment=appointment, amount=Decimal('400.00'), method=PaymentMethod.CREDIT_CARD,
-        )
-        second.clean()
-
     def test_payment_exceeds_limit(self):
         dentist = self._create_dentist("drluis5", "Luís", "33337")
         patient = self._create_patient("paula5", "Paula", "55555555559")
@@ -409,15 +388,11 @@ class ModelTests(TestCase):
             start_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 0)),
             end_datetime=timezone.make_aware(datetime(2026, 7, 10, 10, 45)),
         )
-        Payment.objects.create(
-            appointment=appointment, amount=Decimal('100.00'), method=PaymentMethod.CASH,
-            status=PaymentStatus.PAID,
-        )
-        second = Payment(
-            appointment=appointment, amount=Decimal('100.00'), method=PaymentMethod.CASH,
+        payment = Payment(
+            appointment=appointment, amount=Decimal('200.00'), method=PaymentMethod.CASH,
         )
         with self.assertRaises(ValidationError):
-            second.clean()
+            payment.clean()
 
     def test_payment_mark_as_paid(self):
         dentist = self._create_dentist("drluis6", "Luís", "33338")
@@ -524,3 +499,28 @@ class ModelTests(TestCase):
         self.assertEqual(len(data['slots']), 5)
         self.assertIn('value', data['slots'][0])
         self.assertIn('label', data['slots'][0])
+
+
+    def test_payment_created_on_appointment(self):
+        dentist = self._create_dentist("drpag", "Pagar", "88888")
+        patient = self._create_patient("pagante", "Pagante", "55555555555")
+        procedure = self._create_procedure("Limpeza", 45)
+        today = date.today()
+        sched_start = timezone.make_aware(datetime(today.year, today.month, today.day, 8, 0))
+        sched_end = timezone.make_aware(datetime(today.year, today.month, today.day, 12, 0))
+        Schedule.objects.create(dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
+        self.client.login(username="pagante", password=_TEST_USER_PASSWORD)
+        resp = self.client.get("/appointment/slots/", {"dentist": dentist.id, "procedure": procedure.id})
+        data = json.loads(resp.content)
+        slot_value = data["slots"][0]["value"]
+        resp = self.client.post("/appointment/", {
+            "dentist": dentist.id,
+            "procedure": procedure.id,
+            "start_datetime": slot_value,
+            "payment_method": PaymentMethod.CASH,
+        })
+        self.assertEqual(resp.status_code, 302)
+        payment = Payment.objects.get(appointment__patient=patient)
+        self.assertEqual(payment.amount, procedure.price)
+        self.assertEqual(payment.method, PaymentMethod.CASH)
+        self.assertEqual(payment.status, PaymentStatus.PENDING)
