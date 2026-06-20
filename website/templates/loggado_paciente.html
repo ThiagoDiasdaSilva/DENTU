@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Dentista - Dento</title>
+    <link rel="stylesheet" href="{% static 'website/css/bootstrap.min.css' %}">
+    <style>
+        body { background-color: #1a1a1a; margin: 0; }
+        
+        /* Navbar */
+        .navbar { background: #fff; padding: 15px 30px; border-bottom: 1px solid #ddd; }
+        .nav-links a { color: #333; margin-right: 20px; text-decoration: none; font-weight: 500; }
+        .btn-agendar { background: #3b71ca; color: #fff; padding: 8px 20px; border-radius: 4px; }
+        
+        /* Área de conteúdo principal */
+        .main-content {
+            height: calc(100vh - 80px);
+            background: linear-gradient(135deg, #3b71ca, #1a2a40);
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+        
+        .support-link { color: #fff; text-decoration: underline; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar d-flex justify-content-between align-items-center">
+        <div class="logo font-weight-bold text-primary" style="font-size: 24px;">DENTO</div>
+        <div class="nav-links">
+            <a href="#">HOME</a>
+            <a href="#">DENTISTAS</a>
+            <a href="#">SOBRE</a>
+            <a href="#">SERVIÇOS</a>
+            <a href="#">PREÇOS</a>
+            <a href="#">BLOG</a>
+            <a href="#">CONTATO</a>
+            <a href="#" class="btn-agendar">AGENDE AGORA</a>
+            <img src="{% static 'website/img/core-img/user-icon.png' %}" alt="Perfil" width="40">
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <span class="support-link">Contatar suporte</span>
+    </div>
+
+</body>
+</html>

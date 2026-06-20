@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Login - Dento</title>
+  <link rel="icon" href="{% static 'website/img/core-img/favicon.ico' %}">
+  <link rel="stylesheet" href="{% static 'website/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/font-awesome.min.css' %}">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    .alert-erro    { background:#fdecea; color:#c0392b; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
+    .alert-sucesso { background:#eafaf1; color:#1e8449; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
+
+    body { background:#f4f7fb; font-family:'Segoe UI',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+    .top-bar { padding:16px 32px; display:flex; align-items:center; justify-content:space-between; background:#fff; border-bottom:1px solid #e8edf2; }
+    .top-bar a.home-link { font-size:22px; color:#555; text-decoration:none; }
+    .top-bar a.home-link:hover { color:#1d6aba; }
+    .top-bar img { height:36px; }
+
+    .page-wrapper { flex:1; display:flex; align-items:center; justify-content:center; padding:40px 16px; }
+
+    .auth-card { background:#fff; border:1px solid #dce3ec; border-radius:10px; width:100%; max-width:440px; padding:40px 40px 32px; box-shadow:0 4px 24px rgba(0,0,0,0.07); }
+
+    .auth-tabs { display:flex; border-bottom:2px solid #e8edf2; margin-bottom:28px; }
+    .auth-tabs button { flex:1; background:none; border:none; padding:10px 0; font-size:15px; font-weight:600; color:#aaa; cursor:pointer; transition:color .2s; border-bottom:2px solid transparent; margin-bottom:-2px; }
+    .auth-tabs button.active { color:#1d6aba; border-bottom-color:#1d6aba; }
+
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    .form-group { margin-bottom:18px; }
+    .form-group label { display:block; font-size:13px; font-weight:600; color:#444; margin-bottom:6px; }
+    .form-group input { width:100%; padding:10px 14px; border:1px solid #d0d8e4; border-radius:6px; font-size:14px; background:#f8fafc; transition:border-color .2s; outline:none; }
+    .form-group input:focus { border-color:#1d6aba; background:#fff; }
+
+    .form-extras { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+    .toggle-wrap { display:flex; align-items:center; gap:8px; font-size:13px; color:#555; }
+    .toggle { position:relative; width:40px; height:22px; }
+    .toggle input { display:none; }
+    .toggle-slider { position:absolute; inset:0; background:#ccc; border-radius:22px; cursor:pointer; transition:background .2s; }
+    .toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; }
+    .toggle input:checked + .toggle-slider { background:#1d6aba; }
+    .toggle input:checked + .toggle-slider::before { transform:translateX(18px); }
+
+    .forgot-link { font-size:13px; color:#1d6aba; text-decoration:none; }
+    .forgot-link:hover { text-decoration:underline; }
+
+    .btn-main { width:100%; padding:12px; background:#1d6aba; color:#fff; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer; transition:background .2s; }
+    .btn-main:hover { background:#155a9c; }
+
+    .auth-footer { display:flex; justify-content:space-between; margin-top:20px; }
+    .auth-footer a { font-size:13px; color:#1d6aba; text-decoration:none; }
+    .auth-footer a:hover { text-decoration:underline; }
+  </style>
+</head>
+
+<body>
+
+  <div class="top-bar">
+    <a class="home-link" href="{% url 'index' %}" title="Voltar ao início">
+      <i class="fa fa-home"></i>
+    </a>
+    <a href="{% url 'index' %}">
+      <img src="{% static 'website/img/core-img/logo.png' %}" alt="Dento">
+    </a>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="auth-card">
+
+      <div class="auth-tabs">
+        <button class="active" onclick="switchTab('login', this)">Login</button>
+        <button onclick="switchTab('cadastro', this)">Cadastre-se</button>
+      </div>
+
+      {% if erro %}
+        <div class="alert-erro">{{ erro }}</div>
+      {% endif %}
+      {% if sucesso %}
+        <div class="alert-sucesso">{{ sucesso }}</div>
+      {% endif %}
+
+      <!-- Painel Login -->
+      <div class="tab-panel active" id="panel-login">
+        <form method="post" action="{% url 'signin' %}">
+          {% csrf_token %}
+          <input type="hidden" name="login" value="1">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="text" id="login-email" name="login-email" placeholder="seu@email.com">
+          </div>
+          <div class="form-group">
+            <label for="login-senha">Senha</label>
+            <input type="password" id="login-senha" name="login-senha" placeholder="••••••••">
+          </div>
+          <div class="form-extras">
+            <label class="toggle-wrap">
+              <label class="toggle">
+                <input type="checkbox" name="lembrar">
+                <span class="toggle-slider"></span>
+              </label>
+              Lembrar de mim
+            </label>
+            <a href="#" class="forgot-link" data-toggle="modal" data-target="#modalEsqueciSenha">Esqueci a senha</a>
+          </div>
+          <button type="submit" class="btn-main">Login</button>
+        </form>
+        <div class="auth-footer">
+          <a href="#" onclick="switchTab('cadastro', document.querySelectorAll('.auth-tabs button')[1]); return false;">Cadastre-se</a>
+          <a href="{% url 'signin_dentista' %}">Login para dentistas</a>
+        </div>
+      </div>
+      <!-- fim panel-login -->
+
+      <!-- Painel Cadastro -->
+      <div class="tab-panel" id="panel-cadastro">
+        <form method="post" action="{% url 'signin' %}">
+          {% csrf_token %}
+          <input type="hidden" name="cadastro" value="1">
+          <div class="form-group">
+            <label for="cad-nome">Nome completo</label>
+            <input type="text" id="cad-nome" name="user" placeholder="Seu nome">
+          </div>
+          <div class="form-group">
+            <label for="cad-email">Email</label>
+            <input type="email" id="cad-email" name="email" placeholder="seu@email.com">
+          </div>
+          <div class="form-group">
+            <label for="cad-endereco">Endereço</label>
+            <input type="text" id="cad-endereco" name="address" placeholder="Rua -----, 000">
+          </div>
+          <div class="form-group">
+            <label for="cad-nasc">Data de nascimento</label>
+            <input type="date" id="cad-nasc" name="date_of_birth">
+          </div>
+          <div class="form-group">
+            <label for="cad-senha">Senha</label>
+            <input type="password" id="cad-senha" name="senha" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label for="cad-confirma">Confirmar senha</label>
+            <input type="password" id="cad-confirma" placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn-main">Criar conta</button>
+        </form>
+        <div class="auth-footer">
+          <a href="#" onclick="switchTab('login', document.querySelectorAll('.auth-tabs button')[0]); return false;">Já tenho conta</a>
+        </div>
+      </div>
+      <!-- fim panel-cadastro -->
+
+      <!-- Modal Esqueci a Senha -->
+      <div class="modal fade" id="modalEsqueciSenha" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content" style="border-radius:10px; padding:10px;">
+            <div class="modal-header border-0">
+              <h5 class="modal-title" style="font-weight:700; color:#222;">Recuperar senha</h5>
+              <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <p style="font-size:14px; color:#666; margin-bottom:18px;">
+                Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.
+              </p>
+              <form method="post" action="#">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label style="font-size:13px; font-weight:600;">E-mail</label>
+                  <input type="email" name="reset-email" class="form-control" placeholder="seu@email.com" style="border-radius:6px; font-size:14px;">
+                </div>
+                <button type="submit" class="btn-main" style="margin-top:8px;">Enviar link de recuperação</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab, btn) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.auth-tabs button').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        const inputs = this.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=date])');
+        let valido = true;
+
+        inputs.forEach(input => {
+          if (!input.value.trim()) {
+            input.style.borderColor = '#e74c3c';
+            valido = false;
+          } else {
+            input.style.borderColor = '';
+          }
+        });
+
+        const senha    = this.querySelector('#cad-senha');
+        const confirma = this.querySelector('#cad-confirma');
+        if (senha && confirma && senha.value !== confirma.value) {
+          confirma.style.borderColor = '#e74c3c';
+          alert('As senhas não coincidem.');
+          valido = false;
+        }
+
+        if (!valido) e.preventDefault();
+      });
+    });
+  </script>
+
+  <script src="{% static 'website/js/jquery.min.js' %}"></script>
+  <script src="{% static 'website/js/bootstrap.min.js' %}"></script>
+
+</body>
+</html>

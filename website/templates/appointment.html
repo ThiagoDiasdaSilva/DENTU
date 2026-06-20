@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agendar Consulta{% endblock %}
+{% block meta_description %} Agendamento de consulta odontológica {% endblock %}
+{% block content %}
+
+<!-- ***** Breadcrumb Area Start ***** -->
+<div class="breadcumb-area bg-img bg-gradient-overlay" style="background-image: url({% static 'website/img/bg-img/12.jpg' %});">
+  <div class="container h-100">
+    <div class="row h-100 align-items-center">
+      <div class="col-12">
+        <h2 class="title">Agendar Consulta</h2>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="breadcumb--con">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}"><i class="fa fa-home"></i> Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Agendar Consulta</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ***** Breadcrumb Area End ***** -->
+
+<!-- ***** Appointment Area Start ***** -->
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="section-heading text-center">
+          <h2>Agendar Consulta</h2>
+          <div class="line"></div>
+        </div>
+      </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+      <div class="col-12">
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not_authenticated %}
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 text-center">
+        <div class="alert alert-warning">
+          <h4>Você precisa estar logado para agendar uma consulta.</h4>
+          <p>Faça login ou cadastre-se para continuar.</p>
+          <a href="{% url 'signin' %}" class="btn dento-btn mt-3">Fazer Login</a>
+        </div>
+      </div>
+    </div>
+
+    {% elif not_patient %}
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 text-center">
+        <div class="alert alert-info">
+          <h4>Usuário sem perfil de paciente.</h4>
+          <p>Este usuário não possui um cadastro de paciente vinculado. Para testar, crie um perfil de Patient no <a href="/admin/">Django Admin</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8">
+
+        <div class="patient-info mb-4">
+          <h4>Seus dados</h4>
+          <p><strong>Nome:</strong> {{ patient.user.get_full_name }}</p>
+          <p><strong>Email:</strong> {{ patient.user.email }}</p>
+          <p><strong>Telefone:</strong> {{ patient.phone_number }}</p>
+        </div>
+
+        <form action="{% url 'appointment' %}" method="post" id="appointment-form">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+          {% endif %}
+
+          {% if form.start_datetime.errors %}
+          <div class="alert alert-danger">
+            {{ form.start_datetime.errors }}
+          </div>
+          {% endif %}
+
+          <div class="form-group mb-30">
+            <label for="{{ form.dentist.id_for_label }}"><strong>1. Escolha o dentista:</strong></label>
+            {{ form.dentist }}
+            {% if form.dentist.errors %}
+            <small class="text-danger">{{ form.dentist.errors }}</small>
+            {% endif %}
+          </div>
+
+          <div class="form-group mb-30">
+            <label for="{{ form.procedure.id_for_label }}"><strong>2. Escolha o procedimento:</strong></label>
+            {{ form.procedure }}
+            {% if form.procedure.errors %}
+            <small class="text-danger">{{ form.procedure.errors }}</small>
+            {% endif %}
+          </div>
+
+          <div class="form-group mb-30">
+            <label for="id_start_datetime"><strong>3. Escolha o horário:</strong></label>
+            <select name="start_datetime" id="id_start_datetime" class="form-control" disabled>
+              <option value="">Selecione um dentista e procedimento primeiro</option>
+            </select>
+          </div>
+
+          <div class="col-12 text-center">
+            <button type="submit" class="btn dento-btn" id="submit-btn" disabled>Agendar Consulta</button>
+          </div>
+
+          <div id="loading-slots" class="text-center mt-3" style="display:none;">
+            <p>Carregando horários disponíveis...</p>
+          </div>
+        </form>
+
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+<!-- ***** Appointment Area End ***** -->
+
+<br><br><br>
+
+<script>
+(function() {
+  var dentistSelect = document.getElementById('id_dentist');
+  var procedureSelect = document.getElementById('id_procedure');
+  var slotSelect = document.getElementById('id_start_datetime');
+  var submitBtn = document.getElementById('submit-btn');
+  var loadingDiv = document.getElementById('loading-slots');
+
+  // Disable procedimento and horario initially
+  if (procedureSelect) procedureSelect.disabled = true;
+  if (slotSelect) slotSelect.disabled = true;
+
+  function resetSelect(select, defaultText) {
+    select.innerHTML = '';
+    var opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = defaultText;
+    select.appendChild(opt);
+    select.value = '';
+  }
+
+  function fetchSlots(dentistId, procedureId) {
+    if (!dentistId || !procedureId) return;
+
+    if (loadingDiv) loadingDiv.style.display = 'block';
+    if (submitBtn) submitBtn.disabled = true;
+
+    fetch('/appointment/slots/?dentist=' + dentistId + '&procedure=' + procedureId)
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (loadingDiv) loadingDiv.style.display = 'none';
+
+        if (!slotSelect) return;
+        slotSelect.innerHTML = '';
+        var defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = data.slots && data.slots.length > 0 ? 'Selecione um horário' : 'Nenhum horário disponível';
+        slotSelect.appendChild(defaultOpt);
+
+        if (data.slots) {
+          for (var i = 0; i < data.slots.length; i++) {
+            var opt = document.createElement('option');
+            opt.value = data.slots[i].value;
+            opt.textContent = data.slots[i].label;
+            slotSelect.appendChild(opt);
+          }
+        }
+
+        if (data.slots && data.slots.length > 0) {
+          slotSelect.disabled = false;
+        } else {
+          slotSelect.disabled = true;
+        }
+      })
+      .catch(function(err) {
+        console.error('Erro ao carregar horários:', err);
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (slotSelect) {
+          resetSelect(slotSelect, 'Erro ao carregar horários');
+          slotSelect.disabled = true;
+        }
+      });
+  }
+
+  // Step 1: dentist selected
+  if (dentistSelect) {
+    dentistSelect.addEventListener('change', function() {
+      if (procedureSelect) {
+        procedureSelect.disabled = false;
+        procedureSelect.value = '';
+      }
+      if (slotSelect) {
+        slotSelect.disabled = true;
+        resetSelect(slotSelect, 'Selecione um procedimento primeiro');
+      }
+      if (submitBtn) submitBtn.disabled = true;
+    });
+  }
+
+  // Step 2: procedure selected
+  if (procedureSelect) {
+    procedureSelect.addEventListener('change', function() {
+      var dId = dentistSelect ? dentistSelect.value : '';
+      var pId = procedureSelect.value;
+      if (dId && pId) {
+        fetchSlots(dId, pId);
+      } else {
+        if (slotSelect) {
+          slotSelect.disabled = true;
+          resetSelect(slotSelect, 'Selecione um dentista e procedimento primeiro');
+        }
+        if (submitBtn) submitBtn.disabled = true;
+      }
+    });
+  }
+
+  // Step 3: slot selected
+  if (slotSelect) {
+    slotSelect.addEventListener('change', function() {
+      if (submitBtn) {
+        submitBtn.disabled = !slotSelect.value;
+      }
+    });
+  }
+})();
+</script>
+
+{% endblock %}
