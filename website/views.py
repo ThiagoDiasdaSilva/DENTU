@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth import login as auth_login, authenticate
+from django.contrib.auth.models import User
 from website.forms import AppointmentForm
 from website.models import (
     Appointment, Dentist, Patient, Procedure,
@@ -37,7 +39,86 @@ def contact(request):
 
 
 def signin(request):
-    return render(request, 'signin.html', {})
+    erro = None
+    sucesso = None
+
+    if request.method == 'POST':
+        if 'cadastro' in request.POST:
+            nome = request.POST.get('user', '').strip()
+            email = request.POST.get('email', '').strip()
+            address = request.POST.get('address', '').strip()
+            date_of_birth = request.POST.get('date_of_birth', '').strip()
+            senha = request.POST.get('senha', '').strip()
+
+            if not all([nome, date_of_birth, address, email, senha]):
+                erro = "Preencha todos os campos"
+            elif User.objects.filter(username=nome).exists():
+                erro = "Usuário já cadastrado"
+            elif User.objects.filter(email=email).exists():
+                erro = "E-mail já cadastrado"
+            else:
+                user = User.objects.create_user(username=nome, email=email, password=senha)
+                Patient.objects.create(
+                    user=user,
+                    address=address,
+                    date_of_birth=date_of_birth,
+                )
+                sucesso = "Conta criada com sucesso, faça login"
+
+        elif 'login' in request.POST:
+            identificador = request.POST.get('login-email', '').strip()
+            senha = request.POST.get('login-senha', '')
+
+            try:
+                username = User.objects.get(email=identificador).username
+            except User.DoesNotExist:
+                username = None
+
+            user = authenticate(request, username=username, password=senha) if username else None
+
+            if user is not None:
+                auth_login(request, user)
+                return redirect('loggado_paciente')
+            else:
+                erro = 'E-mail ou senha incorretos.'
+
+    return render(request, 'signin.html', {'erro': erro, 'sucesso': sucesso})
+
+
+def signin_dentista(request):
+    erro = None
+
+    if request.method == 'POST':
+        licenca = request.POST.get('email_cpf', '').strip()
+        senha = request.POST.get('senha', '')
+
+        try:
+            dentist = Dentist.objects.get(license_number=licenca)
+            username = dentist.user.username
+        except Dentist.DoesNotExist:
+            username = None
+
+        user = authenticate(request, username=username, password=senha) if username else None
+
+        if user is not None and hasattr(user, 'dentist'):
+            auth_login(request, user)
+            return redirect('loggado_dentista')
+        else:
+            erro = 'Licença ou senha incorretos.'
+
+    return render(request, 'signin_dentista.html', {'erro': erro})
+
+
+def loggado_dentista(request):
+    if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
+        return redirect('signin_dentista')
+    return render(request, 'loggado_dentista.html', {})
+
+
+def loggado_paciente(request):
+    if not request.user.is_authenticated:
+        return redirect('signin')
+    return render(request, 'loggado_paciente.html', {})
 
 
 def payment(request):
