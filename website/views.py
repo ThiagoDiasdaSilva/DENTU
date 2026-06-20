@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.conf import settings
@@ -10,12 +11,18 @@ from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.models import User
 from website.forms import AppointmentForm
 from website.models import (
-    Appointment, Dentist, Patient, Procedure,
+    Appointment, AppointmentStatus, Dentist, Patient, Procedure,
     Payment, PaymentMethod, PaymentStatus,
 )
 
 
 def index(request):
+    if request.user.is_authenticated:
+        try:
+            request.user.patient
+            return redirect('loggado_paciente')
+        except Patient.DoesNotExist:
+            pass
     return render(request, 'index.html', {})
 
 
@@ -78,7 +85,8 @@ def signin(request):
 
             if user is not None:
                 auth_login(request, user)
-                return redirect('loggado_paciente')
+                next_url = request.POST.get('next') or request.GET.get('next') or 'loggado_paciente'
+                return redirect(next_url)
             else:
                 erro = 'E-mail ou senha incorretos.'
 
@@ -118,7 +126,28 @@ def loggado_dentista(request):
 def loggado_paciente(request):
     if not request.user.is_authenticated:
         return redirect('signin')
-    return render(request, 'loggado_paciente.html', {})
+    patient = request.user.patient
+    appointments = Appointment.objects.filter(patient=patient).order_by('-start_datetime')
+    return render(request, 'loggado_paciente.html', {
+        'appointments': appointments,
+        'AppointmentStatus': AppointmentStatus,
+    })
+
+
+def cancel_appointment(request, appointment_id):
+    if request.method != 'POST':
+        return redirect('loggado_paciente')
+    if not request.user.is_authenticated:
+        return redirect('signin')
+    try:
+        appointment = Appointment.objects.get(pk=appointment_id)
+    except Appointment.DoesNotExist:
+        return redirect('loggado_paciente')
+    if appointment.patient.user != request.user:
+        return redirect('loggado_paciente')
+    if appointment.status == AppointmentStatus.SCHEDULED:
+        appointment.cancel()
+    return redirect('loggado_paciente')
 
 
 def payment(request):
@@ -137,12 +166,8 @@ def service(request):
     return render(request, 'service.html', {})
 
 
+@login_required(login_url='/signin/')
 def appointment(request):
-    if not request.user.is_authenticated:
-        return render(request, 'appointment.html', {
-            'not_authenticated': True,
-        })
-
     try:
         patient = request.user.patient
     except Patient.DoesNotExist:
