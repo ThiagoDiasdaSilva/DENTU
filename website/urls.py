@@ -12,4 +12,7 @@ urlpatterns = [
 	path('service.html', views.service, name="service"),
 	path('appointment/', views.appointment, name="appointment"),
 	path('appointment/slots/', views.available_slots, name="available_slots"),
+	path('signin/dentista/', views.signin_dentista, name='signin_dentista'),
+	path('paciente/', views.loggado_paciente, name='loggado_paciente'),
+	path('dentista/', views.loggado_dentista, name='loggado_dentista'),
 ]
