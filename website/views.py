@@ -146,6 +146,7 @@ def loggado_dentista(request):
     })
 
 
+@require_http_methods(["GET"])
 def loggado_paciente(request):
     if not request.user.is_authenticated:
         return redirect('signin')
