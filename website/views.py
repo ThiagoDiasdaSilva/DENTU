@@ -131,6 +131,7 @@ def signin_dentista(request):
     return render(request, 'signin_dentista.html', {'erro': erro})
 
 
+@require_http_methods(["GET"])
 def loggado_dentista(request):
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
