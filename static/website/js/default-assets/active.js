@@ -1,6 +1,6 @@
 (function($) {
   'use strict';
-  let dento_window = $(window);
+  let dento_window = $(globalThis);
 
   // *******************************
   // :: 1.0 Preloader Active Code
