@@ -170,33 +170,4 @@
       barColor: '#00aeef'
     });
   }
-
-  // // :: 14.0 onePageNav Active Code
-  // if ($.fn.onePageNav) {
-  //     $('#nav').onePageNav({
-  //         currentClass: 'active',
-  //         scrollSpeed: 1500,
-  //         easing: 'easeOutQuad'
-  //     });
-  // }
-  // // :: Animated Headline Active Code
-  // if ($.fn.animatedHeadline) {
-  //   $('.animated-ratate').animatedHeadline();
-  // }
-  //
-  // if ($.fn.animatedHeadline) {
-  //   $('.animated_Headline').animatedHeadline({
-  //   animationType: 'loading-bar'
-  //   });
-  // }
-  // // :: Accordian Active Code
-  //     var dd = $('dd');
-  //     dd.filter(':nth-child(n+3)').hide();
-  //     $('dl').on('click', 'dt', function () {
-  //         $(this).next().slideDown(500).siblings('dd').slideUp(500);
-  //     })
-  //     // :: PreventDefault a Click
-  //     $("a[href='#']").on('click', function ($) {
-  //         $.preventDefault();
-  //     });
 })(jQuery);
