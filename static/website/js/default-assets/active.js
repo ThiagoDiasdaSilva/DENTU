@@ -55,7 +55,7 @@
     welcomeSlider.on('translated.owl.carousel', function() {
       let layer = welcomeSlider.find('.owl-item.active').find("[data-animation]");
       layer.each(function() {
-        var anim_name = $(this).data('animation');
+        let anim_name = $(this).data('animation');
         $(this).addClass('animated ' + anim_name).css('opacity', '1');
       });
     });
