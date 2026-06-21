@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -12,8 +13,8 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .alert-erro    { background:#fdecea; color:#c0392b; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
-    .alert-sucesso { background:#eafaf1; color:#1e8449; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
+    .alert-erro    { background:#fdecea; color:#842029; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
+    .alert-sucesso { background:#eafaf1; color:#0f5132; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
 
     body { background:#f4f7fb; font-family:'Segoe UI',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
@@ -85,7 +86,6 @@
         <div class="alert-sucesso">{{ sucesso }}</div>
       {% endif %}
 
-      <!-- Painel Login -->
       <div class="tab-panel active" id="panel-login">
         <form method="post" action="{% url 'signin' %}">
           {% csrf_token %}
@@ -116,9 +116,6 @@
           <a href="{% url 'signin_dentista' %}">Login para dentistas</a>
         </div>
       </div>
-      <!-- fim panel-login -->
-
-      <!-- Painel Cadastro -->
       <div class="tab-panel" id="panel-cadastro">
         <form method="post" action="{% url 'signin' %}">
           {% csrf_token %}
@@ -153,9 +150,6 @@
           <a href="#" onclick="switchTab('login', document.querySelectorAll('.auth-tabs button')[0]); return false;">Já tenho conta</a>
         </div>
       </div>
-      <!-- fim panel-cadastro -->
-
-      <!-- Modal Esqueci a Senha -->
       <div class="modal fade" id="modalEsqueciSenha" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content" style="border-radius:10px; padding:10px;">
