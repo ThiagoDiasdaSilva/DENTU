@@ -48,15 +48,15 @@
     .toggle input:checked + .toggle-slider { background:#1d6aba; }
     .toggle input:checked + .toggle-slider::before { transform:translateX(18px); }
 
-    .forgot-link { font-size:13px; color:#1d6aba; text-decoration:none; }
+    .forgot-link { font-size:13px; color:#1d6aba; text-decoration:none; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; }
     .forgot-link:hover { text-decoration:underline; }
 
     .btn-main { width:100%; padding:12px; background:#1d6aba; color:#fff; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer; transition:background .2s; }
     .btn-main:hover { background:#155a9c; }
 
     .auth-footer { display:flex; justify-content:space-between; margin-top:20px; }
-    .auth-footer a { font-size:13px; color:#1d6aba; text-decoration:none; }
-    .auth-footer a:hover { text-decoration:underline; }
+    .auth-footer a, .auth-footer button.link-btn { font-size:13px; color:#1d6aba; text-decoration:none; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; }
+    .auth-footer a:hover, .auth-footer button.link-btn:hover { text-decoration:underline; }
   </style>
 </head>
 
@@ -108,13 +108,13 @@
               </label>
               <label for="lembrar-checkbox" style="margin-bottom: 0; cursor: pointer;">Lembrar de mim</label>
             </div>
-            <a href="#" class="forgot-link" data-toggle="modal" data-target="#modalEsqueciSenha">Esqueci a senha</a>
+            <button type="button" class="forgot-link" data-toggle="modal" data-target="#modalEsqueciSenha">Esqueci a senha</button>
           </div>
 
           <button type="submit" class="btn-main">Login</button>
         </form>
         <div class="auth-footer">
-          <a href="#" onclick="switchTab('cadastro', document.querySelectorAll('.auth-tabs button')[1]); return false;">Cadastre-se</a>
+          <button type="button" class="link-btn" onclick="switchTab('cadastro', document.querySelectorAll('.auth-tabs button')[1])">Cadastre-se</button>
           <a href="{% url 'signin_dentista' %}">Login para dentistas</a>
         </div>
       </div>
@@ -150,7 +150,7 @@
           <button type="submit" class="btn-main">Criar conta</button>
         </form>
         <div class="auth-footer">
-          <a href="#" onclick="switchTab('login', document.querySelectorAll('.auth-tabs button')[0]); return false;">Já tenho conta</a>
+          <button type="button" class="link-btn" onclick="switchTab('login', document.querySelectorAll('.auth-tabs button')[0])">Já tenho conta</button>
         </div>
       </div>
       
