@@ -2,11 +2,17 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 import json
 from unittest.mock import patch
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth.models import User
-from website.models import *
+
+from website.models import (
+    Dentist, Patient, Procedure, Schedule, WeeklySchedule, DayOff, 
+    Appointment, AppointmentDetails, Payment, DayOfWeek, AppointmentStatus, 
+    PaymentMethod, PaymentStatus
+)
 
 _TEST_USER_PASSWORD = "123"
 
