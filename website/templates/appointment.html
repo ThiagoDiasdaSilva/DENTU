@@ -1,3 +1,4 @@
+```html
 {% extends 'base.html' %}
 {% load static %}
 
@@ -239,8 +240,8 @@
         var price = Number.parseFloat(selected.dataset.price).toFixed(2);
         priceDisplay.textContent = 'R$ ' + price;
         priceDiv.style.display = 'block';
-      } else {
-        if (priceDiv) priceDiv.style.display = 'none';
+      } else if (priceDiv) {
+        priceDiv.style.display = 'none';
       }
 
       var dId = dentistSelect ? dentistSelect.value : '';
