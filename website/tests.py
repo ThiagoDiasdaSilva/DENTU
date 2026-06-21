@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from website.models import *
 
-_TEST_USER_PASSWORD = "123"
+_TEST_USER_PASSWORD = "TEXT_USER_PASSWORD"
 
 
 class ModelTests(TestCase):
@@ -129,7 +129,8 @@ class ModelTests(TestCase):
             end_time=time(18, 0),
         )
         # 2026-07-13 is a Monday
-        created = dentist.generate_schedules(date(2026, 7, 13), date(2026, 7, 13))
+        created = dentist.generate_schedules(
+            date(2026, 7, 13), date(2026, 7, 13))
         self.assertEqual(created, 2)
         self.assertEqual(dentist.schedules.count(), 2)
 
@@ -142,8 +143,10 @@ class ModelTests(TestCase):
             end_time=time(18, 0),
         )
         # 2026-07-13 is a Monday
-        DayOff.objects.create(dentist=dentist, date=date(2026, 7, 13), reason="Folga")
-        created = dentist.generate_schedules(date(2026, 7, 13), date(2026, 7, 13))
+        DayOff.objects.create(dentist=dentist, date=date(
+            2026, 7, 13), reason="Folga")
+        created = dentist.generate_schedules(
+            date(2026, 7, 13), date(2026, 7, 13))
         self.assertEqual(created, 0)
         self.assertEqual(dentist.schedules.count(), 0)
 
@@ -157,7 +160,8 @@ class ModelTests(TestCase):
         )
         # 2026-07-13 is a Monday
         dentist.generate_schedules(date(2026, 7, 13), date(2026, 7, 13))
-        created = dentist.generate_schedules(date(2026, 7, 13), date(2026, 7, 13))
+        created = dentist.generate_schedules(
+            date(2026, 7, 13), date(2026, 7, 13))
         self.assertEqual(created, 0)
         self.assertEqual(dentist.schedules.count(), 1)
 
@@ -487,9 +491,12 @@ class ModelTests(TestCase):
         dentist = self._create_dentist("drclara3", "Clara", "66663")
         procedure = self._create_procedure("Limpeza", 45)
         tomorrow = date.today() + timedelta(days=1)
-        sched_start = timezone.make_aware(datetime(tomorrow.year, tomorrow.month, tomorrow.day, 8, 0))
-        sched_end = timezone.make_aware(datetime(tomorrow.year, tomorrow.month, tomorrow.day, 12, 0))
-        Schedule.objects.create(dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
+        sched_start = timezone.make_aware(
+            datetime(tomorrow.year, tomorrow.month, tomorrow.day, 8, 0))
+        sched_end = timezone.make_aware(
+            datetime(tomorrow.year, tomorrow.month, tomorrow.day, 12, 0))
+        Schedule.objects.create(
+            dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
         resp = self.client.get('/appointment/slots/', {
             'dentist': dentist.id,
             'procedure': procedure.id,
@@ -501,17 +508,20 @@ class ModelTests(TestCase):
         self.assertIn('value', data['slots'][0])
         self.assertIn('label', data['slots'][0])
 
-
     def test_payment_created_on_appointment(self):
         dentist = self._create_dentist("drpag", "Pagar", "88888")
         patient = self._create_patient("pagante", "Pagante", "55555555555")
         procedure = self._create_procedure("Limpeza", 45)
         tomorrow = date.today() + timedelta(days=1)
-        sched_start = timezone.make_aware(datetime(tomorrow.year, tomorrow.month, tomorrow.day, 8, 0))
-        sched_end = timezone.make_aware(datetime(tomorrow.year, tomorrow.month, tomorrow.day, 12, 0))
-        Schedule.objects.create(dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
+        sched_start = timezone.make_aware(
+            datetime(tomorrow.year, tomorrow.month, tomorrow.day, 8, 0))
+        sched_end = timezone.make_aware(
+            datetime(tomorrow.year, tomorrow.month, tomorrow.day, 12, 0))
+        Schedule.objects.create(
+            dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
         self.client.login(username="pagante", password=_TEST_USER_PASSWORD)
-        resp = self.client.get("/appointment/slots/", {"dentist": dentist.id, "procedure": procedure.id})
+        resp = self.client.get(
+            "/appointment/slots/", {"dentist": dentist.id, "procedure": procedure.id})
         data = json.loads(resp.content)
         slot_value = data["slots"][0]["value"]
         resp = self.client.post("/appointment/", {
@@ -526,14 +536,14 @@ class ModelTests(TestCase):
         self.assertEqual(payment.method, PaymentMethod.CASH)
         self.assertEqual(payment.status, PaymentStatus.PENDING)
 
-
     def test_past_slots_excluded(self):
         dentist = self._create_dentist("drpassado", "Passado", "88887")
         procedure = self._create_procedure("Limpeza", 45)
         # 2026-07-13 is a Monday, schedule 08:00-12:00
         self._create_schedule(dentist, 8, 12, day=13)
         with patch('website.models.dentist.timezone.now') as mock_now:
-            mock_now.return_value = timezone.make_aware(datetime(2026, 7, 13, 10, 0))
+            mock_now.return_value = timezone.make_aware(
+                datetime(2026, 7, 13, 10, 0))
             slots = dentist.get_available_slots(
                 procedure, date(2026, 7, 13), date(2026, 7, 13)
             )
@@ -541,4 +551,5 @@ class ModelTests(TestCase):
         # Should only get 10:15 and 11:00
         self.assertEqual(len(slots), 2)
         for slot_start, slot_end in slots:
-            self.assertGreater(slot_start, timezone.make_aware(datetime(2026, 7, 13, 10, 0)))
+            self.assertGreater(slot_start, timezone.make_aware(
+                datetime(2026, 7, 13, 10, 0)))
