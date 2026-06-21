@@ -38,8 +38,8 @@
           {% csrf_token %}
 
           <div class="form-group">
-            <label><strong>Nota</strong></label>
-            <div class="star-rating" id="star-rating">
+            <div class="h6 mb-2"><strong>Nota</strong></div>
+            <div class="star-rating" id="star-rating" role="radiogroup" aria-label="Avaliação">
               {% for value, label in form.fields.rating.choices %}
               <input type="radio" name="rating" id="star{{ value }}" value="{{ value }}"
                 {% if form.rating.value|add:'0' == value %}checked{% endif %}
