@@ -49,7 +49,7 @@
       $(this).css('animation-delay', anim_del);
     });
     $("[data-duration]").each(function() {
-      var anim_dur = $(this).data('duration');
+      let anim_dur = $(this).data('duration');
       $(this).css('animation-duration', anim_dur);
     });
     welcomeSlider.on('translated.owl.carousel', function() {
