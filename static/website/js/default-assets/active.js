@@ -113,7 +113,7 @@
     $('.dento-portfolio').imagesLoaded(function() {
       // filter items on button click
       $('.portfolio-menu').on('click', 'button', function() {
-        var filterValue = $(this).attr('data-filter');
+        let filterValue = $(this).attr('data-filter');
         $grid.isotope({
           filter: filterValue
         });
