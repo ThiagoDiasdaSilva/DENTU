@@ -82,6 +82,7 @@
 
   function updateStars(value) {
     labels.forEach(function(lbl) {
+      // Usando Number.parseInt como recomendado pelo SonarCloud
       var v = Number.parseInt(lbl.dataset.value, 10);
       lbl.classList.toggle('empty', v > value);
     });
@@ -89,6 +90,7 @@
 
   labels.forEach(function(lbl) {
     lbl.addEventListener('mouseenter', function() {
+      // Usando Number.parseInt
       var v = Number.parseInt(this.dataset.value, 10);
       labels.forEach(function(l) {
         var lv = Number.parseInt(l.dataset.value, 10);
