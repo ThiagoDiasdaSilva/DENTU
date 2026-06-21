@@ -38,7 +38,7 @@
       animateOut: 'fadeOut'
     })
     welcomeSlider.on('translate.owl.carousel', function() {
-      var layer = $("[data-animation]");
+      let layer = $("[data-animation]");
       layer.each(function() {
         var anim_name = $(this).data('animation');
         $(this).removeClass('animated ' + anim_name).css('opacity', '0');
