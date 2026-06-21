@@ -210,11 +210,12 @@
         let valido = true;
 
         inputs.forEach(input => {
-          if (!input.value.trim()) {
+          // CORREÇÃO: Condição afirmativa primeiro, evitando o uso do '!' como o SonarCloud exige
+          if (input.value.trim()) {
+            input.style.borderColor = '';
+          } else {
             input.style.borderColor = '#e74c3c';
             valido = false;
-          } else {
-            input.style.borderColor = '';
           }
         });
 
