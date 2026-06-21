@@ -1,3 +1,4 @@
+```css
 /* [ -- Master Stylesheet -- ] */
 /* ----------------------------------------------------------
 :: Template Name: ClassyNav - Responsive Mega Menu Plugins
@@ -55,7 +56,7 @@ img {
   outline: none;
   font-size: 14px;
   font-weight: 400;
-  color: #1abc9c;
+  color: #008080;
 }
 .classy-nav-container.classy-sticky {
   position: fixed;
@@ -66,7 +67,7 @@ img {
   left: 0;
 }
 .classy-nav-container.box-skins .classynav>ul>li {
-  background-color: #1abc9c;
+  background-color: #008080;
 }
 .classy-nav-container.box-skins .classynav>ul>li>a {
   color: #fff;
@@ -186,9 +187,9 @@ img {
   padding: 0 25px;
   line-height: 42px;
   height: 42px;
-  background-color: #1abc9c;
+  background-color: #008080;
   border-radius: 50px;
-  color: #e6d7d7 !important;
+  color: #ffffff !important;
   margin-left: 30px;
   text-align: center;
 }
@@ -423,7 +424,6 @@ img {
 .breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown,
 .breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown,
 .breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown,
-.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown,
 .breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown,
 .breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown {
   opacity: 1;
@@ -644,12 +644,6 @@ img {
 .dark .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:last-child a {
   border-bottom: none;
 }
-.dark .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li a {
-  border-bottom: 1px solid rgba(242, 244, 248, 0.1);
-}
-.dark .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:last-child a {
-  border-bottom: none;
-}
 /* Right Side Menu Open CSS */
 .right.breakpoint-on .classy-navbar .classy-menu {
   left: auto;
@@ -680,7 +674,7 @@ img {
   visibility: visible;
   top: 90%;
 }
-.dropdown-rtl.breakpoint-off .classynav ul li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown {
+.dropdown-rtl.breakpoint-off .classynav ul li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown, .dropdown-rtl.breakpoint-off .classynav ul li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li .dropdown li:hover .dropdown {
   opacity: 1;
   visibility: visible;
   top: 0;
@@ -690,3 +684,4 @@ img {
   margin-right: 15px;
 }
 /* Fallback Responsive CSS */
+```
