@@ -2,7 +2,7 @@
 (function () {
     let method;
     let noop = function noop() {};
-    var methods = [
+    let methods = [
         'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
         'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
         'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
