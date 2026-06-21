@@ -1,4 +1,4 @@
-```html
+
 {% extends 'base.html' %}
 {% load static %}
 
@@ -82,16 +82,16 @@
 
   function updateStars(value) {
     labels.forEach(function(lbl) {
-      var v = Number.parseInt(lbl.dataset.value);
+      var v = Number.parseInt(lbl.dataset.value, 10);
       lbl.classList.toggle('empty', v > value);
     });
   }
 
   labels.forEach(function(lbl) {
     lbl.addEventListener('mouseenter', function() {
-      var v = Number.parseInt(this.dataset.value);
+      var v = Number.parseInt(this.dataset.value, 10);
       labels.forEach(function(l) {
-        var lv = Number.parseInt(l.dataset.value);
+        var lv = Number.parseInt(l.dataset.value, 10);
         l.classList.toggle('empty', lv > v);
       });
     });
@@ -100,7 +100,7 @@
   rating.addEventListener('mouseleave', function() {
     var checked = rating.querySelector('input[name="rating"]:checked');
     if (checked) {
-      updateStars(Number.parseInt(checked.value));
+      updateStars(Number.parseInt(checked.value, 10));
     } else {
       labels.forEach(function(l) { l.classList.remove('empty'); });
     }
@@ -108,12 +108,12 @@
 
   inputs.forEach(function(input) {
     input.addEventListener('change', function() {
-      updateStars(Number.parseInt(this.value));
+      updateStars(Number.parseInt(this.value, 10));
     });
   });
 
   var checked = rating.querySelector('input[name="rating"]:checked');
-  if (checked) { updateStars(Number.parseInt(checked.value)); }
+  if (checked) { updateStars(Number.parseInt(checked.value, 10)); }
 })();
 </script>
 
