@@ -55,6 +55,14 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
                   </form>
+                  {% elif app.status == AppointmentStatus.COMPLETED %}
+                    <a href="{% url 'rate_appointment' app.id %}" class="btn btn-warning btn-sm" style="text-decoration:none;">
+                      {% if app.rating %}
+                        {% for i in "12345" %}
+                          {% if forloop.counter <= app.rating.rating %}&#9733;{% else %}&#9734;{% endif %}
+                        {% endfor %}
+                      {% else %}Avaliar{% endif %}
+                    </a>
                   {% else %}
                   -
                   {% endif %}

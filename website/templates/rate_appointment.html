@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Avaliar Consulta{% endblock %}
+{% block content %}
+
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Avaliar Consulta</h2>
+          <a href="{% url 'loggado_paciente' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Consulta</h5>
+            <p><strong>Dentista:</strong> {{ appointment.dentist }}</p>
+            <p><strong>Procedimento:</strong> {{ appointment.procedure.name }}</p>
+            <p><strong>Data:</strong> {{ appointment.start_datetime|date:"d/m/Y H:i" }}</p>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label><strong>Nota</strong></label>
+            <div class="star-rating" id="star-rating">
+              {% for value, label in form.fields.rating.choices %}
+              <input type="radio" name="rating" id="star{{ value }}" value="{{ value }}"
+                {% if form.rating.value|add:'0' == value %}checked{% endif %}
+                required>
+              <label for="star{{ value }}" class="star-label" data-value="{{ value }}">&#9733;</label>
+              {% endfor %}
+            </div>
+            {% if form.rating.errors %}
+            <small class="text-danger">{{ form.rating.errors|striptags }}</small>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="id_comment"><strong>Comentário (opcional)</strong></label>
+            {{ form.comment }}
+          </div>
+
+          <button type="submit" class="btn dento-btn">Salvar Avaliação</button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.star-rating { display: flex; gap: 4px; }
+.star-rating input { display: none; }
+.star-label { cursor: pointer; font-size: 2.2rem; color: #f5c518; transition: color 0.1s; }
+.star-label.empty { color: #ccc; }
+</style>
+
+<script>
+(function() {
+  var rating = document.getElementById('star-rating');
+  if (!rating) return;
+  var labels = Array.from(rating.querySelectorAll('.star-label'));
+  var inputs = rating.querySelectorAll('input[name="rating"]');
+
+  function updateStars(value) {
+    labels.forEach(function(lbl) {
+      var v = parseInt(lbl.getAttribute('data-value'));
+      lbl.classList.toggle('empty', v > value);
+    });
+  }
+
+  labels.forEach(function(lbl) {
+    lbl.addEventListener('mouseenter', function() {
+      var v = parseInt(this.getAttribute('data-value'));
+      labels.forEach(function(l) {
+        var lv = parseInt(l.getAttribute('data-value'));
+        l.classList.toggle('empty', lv > v);
+      });
+    });
+  });
+
+  rating.addEventListener('mouseleave', function() {
+    var checked = rating.querySelector('input[name="rating"]:checked');
+    if (checked) {
+      updateStars(parseInt(checked.value));
+    } else {
+      labels.forEach(function(l) { l.classList.remove('empty'); });
+    }
+  });
+
+  inputs.forEach(function(input) {
+    input.addEventListener('change', function() {
+      updateStars(parseInt(this.value));
+    });
+  });
+
+  var checked = rating.querySelector('input[name="rating"]:checked');
+  if (checked) { updateStars(parseInt(checked.value)); }
+})();
+</script>
+
+{% endblock %}

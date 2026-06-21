@@ -8,6 +8,7 @@ from website.models.schedule import Schedule
 from website.models.appointment import Appointment
 from website.models.appointment_details import AppointmentDetails
 from website.models.payment import Payment
+from website.models.rating import AppointmentRating
 
 __all__ = [
     'DayOfWeek',
@@ -23,4 +24,5 @@ __all__ = [
     'Appointment',
     'AppointmentDetails',
     'Payment',
+    'AppointmentRating',
 ]

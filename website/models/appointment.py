@@ -89,6 +89,14 @@ class Appointment(models.Model):
         self.status = AppointmentStatus.COMPLETED
         self.save()
 
+    def mark_no_show(self):
+        if self.status == AppointmentStatus.COMPLETED:
+            raise ValidationError(
+                "Não é possível marcar falta em consulta concluída."
+            )
+        self.status = AppointmentStatus.NO_SHOW
+        self.save()
+
     def is_scheduled(self):
         return self.status == AppointmentStatus.SCHEDULED
 
