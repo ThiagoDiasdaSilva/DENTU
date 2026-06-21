@@ -40,7 +40,7 @@
     welcomeSlider.on('translate.owl.carousel', function() {
       let layer = $("[data-animation]");
       layer.each(function() {
-        var anim_name = $(this).data('animation');
+        let anim_name = $(this).data('animation');
         $(this).removeClass('animated ' + anim_name).css('opacity', '0');
       });
     });
