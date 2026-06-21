@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dentistas{% endblock %}
+{% block content %}
+
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Nossos Dentistas</h2>
+      <a href="{% url 'loggado_paciente' %}" class="btn btn-secondary">Voltar</a>
+    </div>
+
+    <div class="row">
+      {% for dentist in dentists %}
+      <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">{{ dentist.user.get_full_name|default:dentist.user.username }}</h5>
+            <p class="card-text">
+              <strong>Especialidade:</strong> {{ dentist.specialty|default:"-" }}<br>
+              <strong>Registro:</strong> {{ dentist.license_number }}<br>
+              <strong>Telefone:</strong> {{ dentist.phone_number|default:"-" }}
+            </p>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <p>Nenhum dentista cadastrado.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

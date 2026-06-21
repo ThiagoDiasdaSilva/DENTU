@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalhes da Consulta{% endblock %}
+{% block content %}
+
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Detalhes da Consulta</h2>
+          <a href="{% url 'loggado_dentista' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title">Consulta</h5>
+            <p><strong>Paciente:</strong> {{ appointment.patient }}</p>
+            <p><strong>Procedimento:</strong> {{ appointment.procedure.name }}</p>
+            <p><strong>Data:</strong> {{ appointment.start_datetime|date:"d/m/Y H:i" }}</p>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label for="id_diagnosis"><strong>Diagnóstico</strong></label>
+            {{ form.diagnosis }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_prescription"><strong>Prescrição</strong></label>
+            {{ form.prescription }}
+          </div>
+
+          <div class="form-group">
+            <label for="id_notes"><strong>Observações</strong></label>
+            {{ form.notes }}
+          </div>
+
+          <button type="submit" class="btn dento-btn">Salvar Detalhes</button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

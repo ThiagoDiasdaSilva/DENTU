@@ -18,6 +18,7 @@
       <div class="col-12">
         <a href="{% url 'appointment' %}" class="btn dento-btn">Agendar Consulta</a>
         <a href="{% url 'patient_profile' %}" class="btn dento-btn">Meu Perfil</a>
+        <a href="{% url 'dentists_list' %}" class="btn dento-btn">Dentistas</a>
       </div>
     </div>
 
@@ -56,6 +57,7 @@
                     <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
                   </form>
                   {% elif app.status == AppointmentStatus.COMPLETED %}
+                    <a href="{% url 'patient_appointment_details' app.id %}" class="btn btn-info btn-sm">Detalhes</a>
                     <a href="{% url 'rate_appointment' app.id %}" class="btn btn-warning btn-sm" style="text-decoration:none;">
                       {% if app.rating %}
                         {% for i in "12345" %}

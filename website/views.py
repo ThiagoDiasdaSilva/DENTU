@@ -11,7 +11,7 @@ from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.models import User
 from website.forms import (
     AppointmentForm, PatientProfileForm, WeeklyScheduleForm, DentistProfileForm,
-    AppointmentRatingForm,
+    AppointmentRatingForm, AppointmentDetailsForm,
 )
 from website.models import (
     Appointment, AppointmentRating, AppointmentStatus, Dentist, Patient, Procedure,
@@ -128,6 +128,7 @@ def signin_dentista(request):
 def loggado_dentista(request):
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
+    messages.get_messages(request).used = True
     dentist = request.user.dentist
     appointments = Appointment.objects.filter(dentist=dentist).order_by('-start_datetime')
     return render(request, 'loggado_dentista.html', {
@@ -217,6 +218,7 @@ def rate_appointment(request, appointment_id):
 def dentist_schedule(request):
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
+    messages.get_messages(request).used = True
     dentist = request.user.dentist
 
     if request.method == 'POST':
@@ -291,6 +293,61 @@ def no_show_appointment(request, appointment_id):
     if appointment.status == AppointmentStatus.SCHEDULED:
         appointment.mark_no_show()
     return redirect('loggado_dentista')
+
+
+def dentist_appointment_details(request, appointment_id):
+    if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
+        return redirect('signin_dentista')
+    messages.get_messages(request).used = True
+    try:
+        appointment = Appointment.objects.get(pk=appointment_id)
+    except Appointment.DoesNotExist:
+        return redirect('loggado_dentista')
+    if appointment.dentist.user != request.user:
+        return redirect('loggado_dentista')
+    if appointment.status != AppointmentStatus.COMPLETED:
+        return redirect('loggado_dentista')
+
+    details = appointment.details if hasattr(appointment, 'details') else None
+
+    if request.method == 'POST':
+        form = AppointmentDetailsForm(request.POST, instance=details)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.appointment = appointment
+            obj.save()
+            messages.success(request, "Detalhes salvos com sucesso!")
+            return redirect('loggado_dentista')
+    else:
+        form = AppointmentDetailsForm(instance=details)
+
+    return render(request, 'dentist_appointment_details.html', {
+        'form': form,
+        'appointment': appointment,
+    })
+
+
+def patient_appointment_details(request, appointment_id):
+    if not request.user.is_authenticated:
+        return redirect('signin')
+    try:
+        appointment = Appointment.objects.get(pk=appointment_id)
+    except Appointment.DoesNotExist:
+        return redirect('loggado_paciente')
+    if appointment.patient.user != request.user:
+        return redirect('loggado_paciente')
+    if appointment.status != AppointmentStatus.COMPLETED:
+        return redirect('loggado_paciente')
+    details = appointment.details if hasattr(appointment, 'details') else None
+    return render(request, 'patient_appointment_details.html', {
+        'appointment': appointment,
+        'details': details,
+    })
+
+
+def dentists_list(request):
+    dentists = Dentist.objects.select_related('user').all()
+    return render(request, 'dentists_list.html', {'dentists': dentists})
 
 
 def payment(request):

@@ -2,6 +2,7 @@ from django import forms
 
 from website.models import (
     Dentist, Patient, Procedure, PaymentMethod, WeeklySchedule, AppointmentRating,
+    AppointmentDetails,
 )
 
 
@@ -125,3 +126,19 @@ class AppointmentRatingForm(forms.ModelForm):
         fields = ['rating', 'comment']
         labels = {'comment': 'Comentário (opcional)'}
         widgets = {'comment': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Conte sua experiência...'})}
+
+
+class AppointmentDetailsForm(forms.ModelForm):
+    class Meta:
+        model = AppointmentDetails
+        fields = ['diagnosis', 'prescription', 'notes']
+        labels = {
+            'diagnosis': 'Diagnóstico',
+            'prescription': 'Prescrição',
+            'notes': 'Observações',
+        }
+        widgets = {
+            'diagnosis': forms.Textarea(attrs={'rows': 3}),
+            'prescription': forms.Textarea(attrs={'rows': 3}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
+        }
