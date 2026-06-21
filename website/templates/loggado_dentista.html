@@ -1,51 +1,82 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel do Dentista - Dento</title>
-    <link rel="stylesheet" href="{% static 'website/css/bootstrap.min.css' %}">
-    <style>
-        body { background-color: #1a1a1a; margin: 0; }
-        
-        /* Navbar */
-        .navbar { background: #fff; padding: 15px 30px; border-bottom: 1px solid #ddd; }
-        .nav-links a { color: #333; margin-right: 20px; text-decoration: none; font-weight: 500; }
-        .btn-agendar { background: #3b71ca; color: #fff; padding: 8px 20px; border-radius: 4px; }
-        
-        /* Área de conteúdo principal */
-        .main-content {
-            height: calc(100vh - 80px);
-            background: linear-gradient(135deg, #3b71ca, #1a2a40);
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-end;
-            padding: 20px;
-        }
-        
-        .support-link { color: #fff; text-decoration: underline; cursor: pointer; }
-    </style>
-</head>
-<body>
 
-    <nav class="navbar d-flex justify-content-between align-items-center">
-        <div class="logo font-weight-bold text-primary" style="font-size: 24px;">DENTO</div>
-        <div class="nav-links">
-            <a href="#">HOME</a>
-            <a href="#">DENTISTAS</a>
-            <a href="#">SOBRE</a>
-            <a href="#">SERVIÇOS</a>
-            <a href="#">PREÇOS</a>
-            <a href="#">BLOG</a>
-            <a href="#">CONTATO</a>
-            <a href="#" class="btn-agendar">AGENDE AGORA</a>
-            <img src="{% static 'website/img/core-img/user-icon.png' %}" alt="Perfil" width="40">
-        </div>
-    </nav>
+{% block title %}Painel do Dentista{% endblock %}
+{% block content %}
 
-    <div class="main-content">
-        <span class="support-link">Contatar suporte</span>
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+
+    <div class="row mb-4">
+      <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2>Olá, {{ request.user.dentist }}</h2>
+        <a href="{% url 'logout' %}" class="btn btn-danger">Sair</a>
+      </div>
     </div>
 
-</body>
-</html>
+    <div class="row mb-4">
+      <div class="col-12">
+        <a href="{% url 'dentist_schedule' %}" class="btn dento-btn">Meu Horário de Trabalho</a>
+        <a href="{% url 'dentist_profile' %}" class="btn dento-btn">Meu Perfil</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <h4>Minhas Consultas</h4>
+        {% if appointments %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Paciente</th>
+                <th>Procedimento</th>
+                <th>Status</th>
+                <th>Pagamento</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in appointments %}
+              <tr class="{% if app.start_datetime|date:'Y-m-d' == today|date:'Y-m-d' %}table-warning{% endif %}">
+                <td>{{ app.start_datetime|date:"d/m/Y H:i" }}</td>
+                <td>{{ app.patient }}</td>
+                <td>{{ app.procedure.name }}</td>
+                <td>
+                  <span class="badge badge-{% if app.status == AppointmentStatus.SCHEDULED %}primary{% elif app.status == AppointmentStatus.COMPLETED %}success{% elif app.status == AppointmentStatus.CANCELED %}danger{% elif app.status == AppointmentStatus.NO_SHOW %}secondary{% endif %}">
+                    {{ app.get_status_display }}
+                  </span>
+                </td>
+                <td>{{ app.payment.get_status_display|default:"-" }}</td>
+                <td>
+                  {% if app.status == AppointmentStatus.SCHEDULED %}
+                  <form method="post" action="{% url 'complete_appointment' app.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Concluir</button>
+                  </form>
+                  <form method="post" action="{% url 'no_show_appointment' app.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary btn-sm">Faltou</button>
+                  </form>
+                  {% elif app.status == AppointmentStatus.COMPLETED %}
+                  <a href="{% url 'dentist_appointment_details' app.id %}" class="btn btn-info btn-sm">Detalhes</a>
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p>Nenhuma consulta encontrada.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

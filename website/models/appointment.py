@@ -67,7 +67,7 @@ class Appointment(models.Model):
             dentist=self.dentist,
             start_datetime__lt=self.end_datetime,
             end_datetime__gt=self.start_datetime
-        ).exclude(pk=self.pk)
+        ).exclude(pk=self.pk).exclude(status=AppointmentStatus.CANCELED)
         if overlapping.exists():
             raise ValidationError(
                 "Este horário conflita com outra consulta do mesmo dentista."
@@ -87,6 +87,14 @@ class Appointment(models.Model):
                 "Não é possível concluir uma consulta cancelada."
             )
         self.status = AppointmentStatus.COMPLETED
+        self.save()
+
+    def mark_no_show(self):
+        if self.status == AppointmentStatus.COMPLETED:
+            raise ValidationError(
+                "Não é possível marcar falta em consulta concluída."
+            )
+        self.status = AppointmentStatus.NO_SHOW
         self.save()
 
     def is_scheduled(self):

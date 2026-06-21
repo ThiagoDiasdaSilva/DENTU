@@ -90,6 +90,7 @@
         <form method="post" action="{% url 'signin' %}">
           {% csrf_token %}
           <input type="hidden" name="login" value="1">
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
           <div class="form-group">
             <label for="login-email">Email</label>
             <input type="text" id="login-email" name="login-email" placeholder="seu@email.com">

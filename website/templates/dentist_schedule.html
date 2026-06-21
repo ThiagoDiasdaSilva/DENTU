@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meu Horário de Trabalho{% endblock %}
+{% block content %}
+
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Meu Horário de Trabalho</h2>
+          <a href="{% url 'loggado_dentista' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- Horários atuais -->
+        <h4>Horários Semanais</h4>
+        {% if weekly_schedules %}
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Dia</th>
+              <th>Início</th>
+              <th>Término</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ws in weekly_schedules %}
+            <tr>
+              <td>{{ ws.get_day_of_week_display }}</td>
+              <td>{{ ws.start_time|time:"H:i" }}</td>
+              <td>{{ ws.end_time|time:"H:i" }}</td>
+              <td>
+                <form method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="remove" value="1">
+                  <input type="hidden" name="schedule_id" value="{{ ws.id }}">
+                  <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>Nenhum horário cadastrado. Adicione abaixo.</p>
+        {% endif %}
+
+        <!-- Adicionar horário -->
+        <h4 class="mt-4">Adicionar Horário</h4>
+        <form method="post" class="mb-4">
+          {% csrf_token %}
+          <input type="hidden" name="add" value="1">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="id_day_of_week">Dia</label>
+              {{ form.day_of_week }}
+            </div>
+            <div class="form-group col-md-3">
+              <label for="id_start_time">Início</label>
+              {{ form.start_time }}
+            </div>
+            <div class="form-group col-md-3">
+              <label for="id_end_time">Término</label>
+              {{ form.end_time }}
+            </div>
+            <div class="form-group col-md-2 d-flex align-items-end">
+              <button type="submit" class="btn dento-btn">Adicionar</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Gerar agenda -->
+        <h4>Agenda</h4>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="generate" value="1">
+          <p>Gere sua agenda concreta com base nos horários semanais cadastrados.</p>
+          <button type="submit" class="btn dento-btn">Gerar Agenda (30 dias)</button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

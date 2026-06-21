@@ -1,6 +1,9 @@
 from django import forms
 
-from website.models import Dentist, Procedure, PaymentMethod
+from website.models import (
+    Dentist, Patient, Procedure, PaymentMethod, WeeklySchedule, AppointmentRating,
+    AppointmentDetails,
+)
 
 
 class AppointmentForm(forms.Form):
@@ -28,3 +31,114 @@ class AppointmentForm(forms.Form):
         if not value:
             raise forms.ValidationError("Selecione uma forma de pagamento.")
         return int(value)
+
+
+class PatientProfileForm(forms.ModelForm):
+    first_name = forms.CharField(label="Nome", max_length=30, required=False)
+    last_name = forms.CharField(label="Sobrenome", max_length=150, required=False)
+    email = forms.EmailField(label="Email")
+
+    class Meta:
+        model = Patient
+        fields = ['phone_number', 'date_of_birth', 'address']
+        labels = {
+            'phone_number': 'Telefone',
+            'date_of_birth': 'Data de nascimento',
+            'address': 'Endereço',
+        }
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'address': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user_id:
+            self.fields['first_name'].initial = self.instance.user.first_name
+            self.fields['last_name'].initial = self.instance.user.last_name
+            self.fields['email'].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        patient = super().save(commit=False)
+        patient.user.first_name = self.cleaned_data['first_name']
+        patient.user.last_name = self.cleaned_data['last_name']
+        patient.user.email = self.cleaned_data['email']
+        if commit:
+            patient.user.save()
+            patient.save()
+        return patient
+
+
+class WeeklyScheduleForm(forms.ModelForm):
+    class Meta:
+        model = WeeklySchedule
+        fields = ['day_of_week', 'start_time', 'end_time']
+        labels = {
+            'day_of_week': 'Dia da semana',
+            'start_time': 'Início',
+            'end_time': 'Término',
+        }
+        widgets = {
+            'start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }
+
+
+class DentistProfileForm(forms.ModelForm):
+    first_name = forms.CharField(label="Nome", max_length=30, required=False)
+    last_name = forms.CharField(label="Sobrenome", max_length=150, required=False)
+    email = forms.EmailField(label="Email")
+
+    class Meta:
+        model = Dentist
+        fields = ['specialty', 'phone_number']
+        labels = {
+            'specialty': 'Especialidade',
+            'phone_number': 'Telefone',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user_id:
+            self.fields['first_name'].initial = self.instance.user.first_name
+            self.fields['last_name'].initial = self.instance.user.last_name
+            self.fields['email'].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        dentist = super().save(commit=False)
+        dentist.user.first_name = self.cleaned_data['first_name']
+        dentist.user.last_name = self.cleaned_data['last_name']
+        dentist.user.email = self.cleaned_data['email']
+        if commit:
+            dentist.user.save()
+            dentist.save()
+        return dentist
+
+
+RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
+
+
+class AppointmentRatingForm(forms.ModelForm):
+    rating = forms.ChoiceField(choices=RATING_CHOICES, label="Nota")
+
+    class Meta:
+        model = AppointmentRating
+        fields = ['rating', 'comment']
+        labels = {'comment': 'Comentário (opcional)'}
+        widgets = {'comment': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Conte sua experiência...'})}
+
+
+class AppointmentDetailsForm(forms.ModelForm):
+    class Meta:
+        model = AppointmentDetails
+        fields = ['diagnosis', 'prescription', 'notes']
+        labels = {
+            'diagnosis': 'Diagnóstico',
+            'prescription': 'Prescrição',
+            'notes': 'Observações',
+        }
+        widgets = {
+            'diagnosis': forms.Textarea(attrs={'rows': 3}),
+            'prescription': forms.Textarea(attrs={'rows': 3}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
+        }
