@@ -119,7 +119,7 @@
         });
       });
       // init Isotope
-      var $grid = $('.dento-portfolio').isotope({
+      let $grid = $('.dento-portfolio').isotope({
         itemSelector: '.single_gallery_item',
         percentPosition: true,
         masonry: {
