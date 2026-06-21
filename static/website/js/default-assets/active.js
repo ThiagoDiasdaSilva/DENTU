@@ -53,7 +53,7 @@
       $(this).css('animation-duration', anim_dur);
     });
     welcomeSlider.on('translated.owl.carousel', function() {
-      var layer = welcomeSlider.find('.owl-item.active').find("[data-animation]");
+      let layer = welcomeSlider.find('.owl-item.active').find("[data-animation]");
       layer.each(function() {
         var anim_name = $(this).data('animation');
         $(this).addClass('animated ' + anim_name).css('opacity', '1');
