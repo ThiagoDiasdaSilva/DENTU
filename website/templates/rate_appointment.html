@@ -1,3 +1,4 @@
+```html
 {% extends 'base.html' %}
 {% load static %}
 
@@ -81,16 +82,16 @@
 
   function updateStars(value) {
     labels.forEach(function(lbl) {
-      var v = parseInt(lbl.getAttribute('data-value'));
+      var v = parseInt(lbl.dataset.value);
       lbl.classList.toggle('empty', v > value);
     });
   }
 
   labels.forEach(function(lbl) {
     lbl.addEventListener('mouseenter', function() {
-      var v = parseInt(this.getAttribute('data-value'));
+      var v = parseInt(this.dataset.value);
       labels.forEach(function(l) {
-        var lv = parseInt(l.getAttribute('data-value'));
+        var lv = parseInt(l.dataset.value);
         l.classList.toggle('empty', lv > v);
       });
     });
