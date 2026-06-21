@@ -9,7 +9,7 @@
         'timeStamp', 'trace', 'warn'
     ];
     let length = methods.length;
-    let console = (globalThis = globalThis || {});
+    let console = (globalThis.console = globalThis.console || {});
     while (length--) {
         method = methods[length];
         // Only stub undefined methods.
