@@ -12,7 +12,7 @@ $(function () {
         e.preventDefault();
 
         // Serialize the form data.
-        var formData = $(form).serialize();
+        let formData = $(form).serialize();
 
         // Submit the form using AJAX.
         $.ajax({
