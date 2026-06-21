@@ -236,7 +236,7 @@
     procedureSelect.addEventListener('change', function() {
       var selected = procedureSelect.options[procedureSelect.selectedIndex];
       if (selected && selected.dataset.price && priceDiv && priceDisplay) {
-        var price = parseFloat(selected.dataset.price).toFixed(2);
+        var price = Number.parseFloat(selected.dataset.price).toFixed(2);
         priceDisplay.textContent = 'R$ ' + price;
         priceDiv.style.display = 'block';
       } else {
