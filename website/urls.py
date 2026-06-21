@@ -16,6 +16,7 @@ urlpatterns = [
 	path('signin/dentista/', views.signin_dentista, name='signin_dentista'),
 	path('paciente/', views.loggado_paciente, name='loggado_paciente'),
 	path('dentista/', views.loggado_dentista, name='loggado_dentista'),
+	path('paciente/perfil/', views.patient_profile, name='patient_profile'),
 	path('paciente/cancelar/<int:appointment_id>/', views.cancel_appointment, name='cancel_appointment'),
 	path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
 ]

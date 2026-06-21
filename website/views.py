@@ -9,7 +9,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.models import User
-from website.forms import AppointmentForm
+from website.forms import AppointmentForm, PatientProfileForm
 from website.models import (
     Appointment, AppointmentStatus, Dentist, Patient, Procedure,
     Payment, PaymentMethod, PaymentStatus,
@@ -148,6 +148,20 @@ def cancel_appointment(request, appointment_id):
     if appointment.status == AppointmentStatus.SCHEDULED:
         appointment.cancel()
     return redirect('loggado_paciente')
+
+
+@login_required(login_url='/signin/')
+def patient_profile(request):
+    patient = request.user.patient
+    if request.method == 'POST':
+        form = PatientProfileForm(request.POST, instance=patient)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Perfil atualizado com sucesso!")
+            return redirect('patient_profile')
+    else:
+        form = PatientProfileForm(instance=patient)
+    return render(request, 'patient_profile.html', {'form': form})
 
 
 def payment(request):

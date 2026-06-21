@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meu Perfil{% endblock %}
+{% block content %}
+
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Meu Perfil</h2>
+          <a href="{% url 'loggado_paciente' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="form-group">
+            <label for="id_first_name">Nome</label>
+            <input type="text" name="first_name" id="id_first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" maxlength="30">
+          </div>
+
+          <div class="form-group">
+            <label for="id_last_name">Sobrenome</label>
+            <input type="text" name="last_name" id="id_last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" maxlength="150">
+          </div>
+
+          <div class="form-group">
+            <label for="id_email">Email</label>
+            <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value|default:'' }}">
+            {% if form.email.errors %}<small class="text-danger">{{ form.email.errors|striptags }}</small>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="id_phone_number">Telefone</label>
+            <input type="text" name="phone_number" id="id_phone_number" class="form-control" value="{{ form.phone_number.value|default:'' }}">
+            {% if form.phone_number.errors %}<small class="text-danger">{{ form.phone_number.errors|striptags }}</small>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="id_date_of_birth">Data de nascimento</label>
+            <input type="date" name="date_of_birth" id="id_date_of_birth" class="form-control" value="{{ form.date_of_birth.value|date:'Y-m-d' }}">
+            {% if form.date_of_birth.errors %}<small class="text-danger">{{ form.date_of_birth.errors|striptags }}</small>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="id_address">Endereço</label>
+            <textarea name="address" id="id_address" class="form-control" rows="3">{{ form.address.value|default:'' }}</textarea>
+            {% if form.address.errors %}<small class="text-danger">{{ form.address.errors|striptags }}</small>{% endif %}
+          </div>
+
+          <button type="submit" class="btn dento-btn">Salvar</button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
