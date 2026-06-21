@@ -45,7 +45,7 @@
       });
     });
     $("[data-delay]").each(function() {
-      var anim_del = $(this).data('delay');
+      let anim_del = $(this).data('delay');
       $(this).css('animation-delay', anim_del);
     });
     $("[data-duration]").each(function() {
