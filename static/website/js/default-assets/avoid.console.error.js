@@ -8,7 +8,7 @@
         'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
         'timeStamp', 'trace', 'warn'
     ];
-    var length = methods.length;
+    let length = methods.length;
     var console = (window.console = window.console || {});
     while (length--) {
         method = methods[length];
