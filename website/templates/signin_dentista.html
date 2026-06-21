@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -27,10 +28,27 @@
     
     .form-extras { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
     .toggle-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; }
-    .forgot-link { font-size: 13px; color: #1d6aba; text-decoration: none; }
+    .forgot-link { font-size: 13px; color: #1d6aba; text-decoration: none; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
     
     .btn-main { width: 100%; padding: 12px; background: #1d6aba; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
     .btn-main:hover { background: #155a9c; }
+
+    /* Estilos para o dialog nativo */
+    dialog {
+      border: none;
+      border-radius: 10px;
+      padding: 0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      max-width: 500px;
+      width: 90%;
+      margin: auto;
+    }
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content-wrapper {
+      padding: 20px;
+    }
   </style>
 </head>
 
@@ -46,45 +64,47 @@
       <h2>Login Dentista</h2>
       <form method="post" action="{% url 'signin_dentista' %}">
         {% csrf_token %}
+        
         <div class="form-group">
-          <label>licença</label>
-          <input type="text" name="email_cpf" placeholder="numero de licença">
+          <label for="licenca">Licença</label>
+          <input type="text" id="licenca" name="email_cpf" placeholder="Número de licença">
         </div>
+        
         <div class="form-group">
-          <label>Senha</label>
-          <input type="password" name="senha" placeholder="••••••••">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" placeholder="••••••••">
         </div>
+        
         <div class="form-extras">
-          <label class="toggle-wrap">
-            <input type="checkbox" name="lembrar"> Lembrar de mim
-          </label>
-        <a href="#" class="forgot-link" data-toggle="modal" data-target="#modalEsqueciSenha">Esqueci a senha</a>
+          <div class="toggle-wrap">
+            <input type="checkbox" id="lembrar" name="lembrar">
+            <label for="lembrar" style="margin-bottom: 0; cursor: pointer; font-weight: normal;">Lembrar de mim</label>
+          </div>
+          <button type="button" class="forgot-link" onclick="document.getElementById('modalEsqueciSenha').showModal()">Esqueci a senha</button>
         </div>
         <button type="submit" class="btn-main">Login</button>
       </form>
     </div>
   </div>
 
-     <div class="modal fade" id="modalEsqueciSenha" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content" style="border-radius: 10px; padding: 10px;">
-
-      <div class="modal-header border-0">
-        <h5 class="modal-title" style="font-weight: 700; color: #222;">Recuperar senha</h5>
-        <button type="button" class="close" data-dismiss="modal">
+  <dialog id="modalEsqueciSenha">
+    <div class="modal-content-wrapper">
+      <div class="modal-header border-0 d-flex justify-content-between align-items-center" style="padding-bottom: 15px;">
+        <h5 class="modal-title" style="font-weight: 700; color: #222; margin: 0;">Recuperar senha</h5>
+        <button type="button" class="close" onclick="document.getElementById('modalEsqueciSenha').close()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">
           <span>&times;</span>
         </button>
       </div>
 
-  <div class="modal-body">
+      <div class="modal-body">
         <p style="font-size: 14px; color: #666; margin-bottom: 18px;">
           Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.
         </p>
         <form method="post" action="#">
           {% csrf_token %}
           <div class="form-group">
-            <label style="font-size: 13px; font-weight: 600;">E-mail</label>
-            <input type="email" name="reset-email" class="form-control"
+            <label for="reset-email" style="font-size: 13px; font-weight: 600;">E-mail</label>
+            <input type="email" id="reset-email" name="reset-email" class="form-control"
               placeholder="seu@email.com"
               style="border-radius: 6px; font-size: 14px;">
           </div>
@@ -93,12 +113,20 @@
           </button>
         </form>
       </div>
+    </div>
+  </dialog>
 
   <script src="{% static 'website/js/jquery.min.js' %}"></script>
   <script src="{% static 'website/js/bootstrap.min.js' %}"></script>
 
   <script> 
-    
+    // Fechar o dialog ao clicar fora dele
+    const dialog = document.getElementById('modalEsqueciSenha');
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) {
+        dialog.close();
+      }
+    });
   </script>
 </body>
 </html>
