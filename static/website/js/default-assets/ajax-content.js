@@ -39,7 +39,7 @@ $(function () {
                 $(formMessages).addClass('error');
 
                 // Set the message text.
-                if (data.responseText !== '') {
+                if (data.responseText) {
                     $(formMessages).text(data.responseText);
                 } else {
                     $(formMessages).text('Oops! An error occured.');
