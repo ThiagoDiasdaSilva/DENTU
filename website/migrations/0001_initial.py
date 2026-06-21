@@ -5,6 +5,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 import django.db.models.expressions
 
+DENTIST_MODEL = 'website.Dentist'
 
 class Migration(migrations.Migration):
 
@@ -65,7 +66,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('start_datetime', models.DateTimeField()),
                 ('end_datetime', models.DateTimeField()),
-                ('dentist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedules', to='website.Dentist')),
+                ('dentist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedules', to=DENTIST_MODEL)),
             ],
             options={
                 'verbose_name': 'Horário de Trabalho',
@@ -109,7 +110,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField()),
                 ('reason', models.CharField(blank=True, max_length=100)),
-                ('dentist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='days_off', to='website.Dentist')),
+                ('dentist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='days_off', to=DENTIST_MODEL)),
             ],
             options={
                 'verbose_name': 'Folga',
@@ -134,7 +135,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='appointment',
             name='dentist',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='appointments', to='website.Dentist'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='appointments', to=DENTIST_MODEL),
         ),
         migrations.AddField(
             model_name='appointment',
@@ -153,7 +154,7 @@ class Migration(migrations.Migration):
                 ('day_of_week', models.IntegerField(choices=[(0, 'Segunda-feira'), (1, 'Terça-feira'), (2, 'Quarta-feira'), (3, 'Quinta-feira'), (4, 'Sexta-feira'), (5, 'Sábado'), (6, 'Domingo')])),
                 ('start_time', models.TimeField()),
                 ('end_time', models.TimeField()),
-                ('dentist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='weekly_schedules', to='website.Dentist')),
+                ('dentist', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='weekly_schedules', to=DENTIST_MODEL)),
             ],
             options={
                 'verbose_name': 'Horário Semanal',
