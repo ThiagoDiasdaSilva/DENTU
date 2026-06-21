@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.models import User
+from django.views.decorators.http import require_GET, require_POST
 
 from website.forms import (
     AppointmentForm, PatientProfileForm, WeeklyScheduleForm, DentistProfileForm,
@@ -20,7 +21,7 @@ from website.models import (
     Payment, PaymentMethod, PaymentStatus, WeeklySchedule,
 )
 
-# --- Funções Auxiliares de Autenticação (Refatoração para menor complexidade) ---
+# --- Funções Auxiliares de Autenticação (Refatoradas) ---
 
 def _handle_registration(request):
     nome = request.POST.get('user', '').strip()
@@ -62,6 +63,7 @@ def _handle_login(request):
 
 # --- Views ---
 
+@require_GET
 def index(request):
     if request.user.is_authenticated:
         if hasattr(request.user, 'patient'):
@@ -130,6 +132,7 @@ def signin_dentista(request):
     return render(request, 'signin_dentista.html', {'erro': erro})
 
 
+@require_GET
 def loggado_dentista(request):
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
@@ -143,6 +146,7 @@ def loggado_dentista(request):
     })
 
 
+@require_GET
 def loggado_paciente(request):
     if not request.user.is_authenticated:
         return redirect('signin')
@@ -154,9 +158,8 @@ def loggado_paciente(request):
     })
 
 
+@require_POST
 def cancel_appointment(request, appointment_id):
-    if request.method != 'POST':
-        return redirect('loggado_paciente')
     if not request.user.is_authenticated:
         return redirect('signin')
     try:
@@ -268,9 +271,8 @@ def dentist_profile(request):
     return render(request, 'dentist_profile.html', {'form': form})
 
 
+@require_POST
 def complete_appointment(request, appointment_id):
-    if request.method != 'POST':
-        return redirect('loggado_dentista')
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
     try:
@@ -284,9 +286,8 @@ def complete_appointment(request, appointment_id):
     return redirect('loggado_dentista')
 
 
+@require_POST
 def no_show_appointment(request, appointment_id):
-    if request.method != 'POST':
-        return redirect('loggado_dentista')
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
     try:
@@ -332,6 +333,7 @@ def dentist_appointment_details(request, appointment_id):
     })
 
 
+@require_GET
 def patient_appointment_details(request, appointment_id):
     if not request.user.is_authenticated:
         return redirect('signin')
@@ -350,6 +352,7 @@ def patient_appointment_details(request, appointment_id):
     })
 
 
+@require_GET
 def dentists_list(request):
     dentists = Dentist.objects.select_related('user').all()
     return render(request, 'dentists_list.html', {'dentists': dentists})
@@ -418,6 +421,7 @@ def appointment(request):
     })
 
 
+@require_GET
 def available_slots(request):
     try:
         dentist_id = request.GET.get('dentist')
