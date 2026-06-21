@@ -12,9 +12,14 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
-import django_heroku    #for heroku
-import dj_database_url    #for heroku
-from decouple import config   #for heroku
+import django_heroku  # for heroku
+import dj_database_url  # for heroku
+from decouple import config  # for heroku
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +29,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '5+4g8ltkw5)*d$u7rszraf6kt*4o(1_uqtw$iue_p!@+=4k=3d'
+SECRET_KEY = os.getenv(
+    'SECRET_KEY', '5+4g8ltkw5)*d$u7rszraf6kt*4o(1_uqtw$iue_p!@+=4k=3d')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -52,7 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  #for heroku
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # for heroku
 
 ]
 
@@ -130,28 +136,28 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'    #for heroku
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # for heroku
 
-#email settings
-#development setting
+# email settings
+# development setting
 # run this command in shell to activate the server >   $ python -m smtpd -n -c DebuggingServer localhost:1025
-##EMAIL_HOST = 'localhost'
-##EMAIL_PORT = '1025'
-##EMAIL_HOST_USER = ''
-##EMAIL_HOST_PASSWORD = ''
-##EMAIL_USE_TLS = False
-#EMAIL_USE_SSL = False
+# EMAIL_HOST = 'localhost'
+# EMAIL_PORT = '1025'
+# EMAIL_HOST_USER = ''
+# EMAIL_HOST_PASSWORD = ''
+# EMAIL_USE_TLS = False
+# EMAIL_USE_SSL = False
 
-#production settings
+# production settings
 # myaccount.google.com/lesssecureapps
 # https://accounts.google.com/DisplayUnlockCaptcha
-#https://myaccount.google.com/apppasswords
+# https://myaccount.google.com/apppasswords
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'
 EMAIL_HOST_USER = 'laurimakoko44@gmail.com'
 EMAIL_HOST_PASSWORD = 'txrmsslyvhtgtnbv'
 EMAIL_USE_TLS = True
-#EMAIL_USE_SSL = False
+# EMAIL_USE_SSL = False
 
-django_heroku.settings(locals())    #for heroku
+django_heroku.settings(locals())  # for heroku
