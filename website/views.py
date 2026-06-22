@@ -366,18 +366,22 @@ def dentists_list(request):
     return render(request, 'dentists_list.html', {'dentists': dentists})
 
 
+@require_http_methods(["GET"])
 def payment(request):
     return render(request, 'payment.html', {})
 
 
+@require_http_methods(["GET"])
 def about(request):
     return render(request, 'about.html', {})
 
 
+@require_http_methods(["GET"])
 def pricing(request):
     return render(request, 'pricing.html', {})
 
 
+@require_http_methods(["GET"])
 def service(request):
     return render(request, 'service.html', {})
 
