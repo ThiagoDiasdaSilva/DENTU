@@ -309,7 +309,6 @@ def no_show_appointment(request, appointment_id):
     return redirect('loggado_dentista')
 
 
-@require_http_methods(["GET", "POST"])
 def dentist_appointment_details(request, appointment_id):
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
@@ -342,6 +341,7 @@ def dentist_appointment_details(request, appointment_id):
     })
 
 
+@require_http_methods(["GET"])
 def patient_appointment_details(request, appointment_id):
     if not request.user.is_authenticated:
         return redirect('signin')
