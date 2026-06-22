@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.models import User
+from django.views.decorators.http import require_http_methods
 from website.forms import (
     AppointmentForm, PatientProfileForm, WeeklyScheduleForm, DentistProfileForm,
     AppointmentRatingForm, AppointmentDetailsForm,
@@ -19,6 +20,7 @@ from website.models import (
 )
 
 
+@require_http_methods(["GET"])
 def index(request):
     if request.user.is_authenticated:
         try:
@@ -72,7 +74,8 @@ def signin(request):
             elif User.objects.filter(email=email).exists():
                 erro = "E-mail já cadastrado"
             else:
-                user = User.objects.create_user(username=nome, email=email, password=senha)
+                user = User.objects.create_user(
+                    username=nome, email=email, password=senha)
                 Patient.objects.create(
                     user=user,
                     address=address,
@@ -89,11 +92,13 @@ def signin(request):
             except User.DoesNotExist:
                 username = None
 
-            user = authenticate(request, username=username, password=senha) if username else None
+            user = authenticate(request, username=username,
+                                password=senha) if username else None
 
             if user is not None:
                 auth_login(request, user)
-                next_url = request.POST.get('next') or request.GET.get('next') or 'loggado_paciente'
+                next_url = request.POST.get('next') or request.GET.get(
+                    'next') or 'loggado_paciente'
                 return redirect(next_url)
             else:
                 erro = 'E-mail ou senha incorretos.'
@@ -114,7 +119,8 @@ def signin_dentista(request):
         except Dentist.DoesNotExist:
             username = None
 
-        user = authenticate(request, username=username, password=senha) if username else None
+        user = authenticate(request, username=username,
+                            password=senha) if username else None
 
         if user is not None and hasattr(user, 'dentist'):
             auth_login(request, user)
@@ -125,12 +131,14 @@ def signin_dentista(request):
     return render(request, 'signin_dentista.html', {'erro': erro})
 
 
+@require_http_methods(["GET"])
 def loggado_dentista(request):
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
     messages.get_messages(request).used = True
     dentist = request.user.dentist
-    appointments = Appointment.objects.filter(dentist=dentist).order_by('-start_datetime')
+    appointments = Appointment.objects.filter(
+        dentist=dentist).order_by('-start_datetime')
     return render(request, 'loggado_dentista.html', {
         'appointments': appointments,
         'AppointmentStatus': AppointmentStatus,
@@ -138,11 +146,13 @@ def loggado_dentista(request):
     })
 
 
+@require_http_methods(["GET"])
 def loggado_paciente(request):
     if not request.user.is_authenticated:
         return redirect('signin')
     patient = request.user.patient
-    appointments = Appointment.objects.filter(patient=patient).order_by('-start_datetime')
+    appointments = Appointment.objects.filter(
+        patient=patient).order_by('-start_datetime')
     return render(request, 'loggado_paciente.html', {
         'appointments': appointments,
         'AppointmentStatus': AppointmentStatus,
@@ -234,14 +244,18 @@ def dentist_schedule(request):
                 messages.success(request, "Horário adicionado com sucesso!")
         elif 'remove' in request.POST:
             schedule_id = request.POST.get('schedule_id')
-            WeeklySchedule.objects.filter(pk=schedule_id, dentist=dentist).delete()
+            WeeklySchedule.objects.filter(
+                pk=schedule_id, dentist=dentist).delete()
             messages.success(request, "Horário removido.")
         elif 'generate' in request.POST:
             today = date.today()
-            created = dentist.generate_schedules(today, today + timedelta(days=30))
-            messages.success(request, f"Agenda gerada para os próximos 30 dias ({created} horários).")
+            created = dentist.generate_schedules(
+                today, today + timedelta(days=30))
+            messages.success(
+                request, f"Agenda gerada para os próximos 30 dias ({created} horários).")
 
-    weekly_schedules = WeeklySchedule.objects.filter(dentist=dentist).order_by('day_of_week', 'start_time')
+    weekly_schedules = WeeklySchedule.objects.filter(
+        dentist=dentist).order_by('day_of_week', 'start_time')
     form = WeeklyScheduleForm()
     return render(request, 'dentist_schedule.html', {
         'weekly_schedules': weekly_schedules,
@@ -327,6 +341,7 @@ def dentist_appointment_details(request, appointment_id):
     })
 
 
+@require_http_methods(["GET"])
 def patient_appointment_details(request, appointment_id):
     if not request.user.is_authenticated:
         return redirect('signin')
@@ -345,23 +360,28 @@ def patient_appointment_details(request, appointment_id):
     })
 
 
+@require_http_methods(["GET"])
 def dentists_list(request):
     dentists = Dentist.objects.select_related('user').all()
     return render(request, 'dentists_list.html', {'dentists': dentists})
 
 
+@require_http_methods(["GET"])
 def payment(request):
     return render(request, 'payment.html', {})
 
 
+@require_http_methods(["GET"])
 def about(request):
     return render(request, 'about.html', {})
 
 
+@require_http_methods(["GET"])
 def pricing(request):
     return render(request, 'pricing.html', {})
 
 
+@require_http_methods(["GET"])
 def service(request):
     return render(request, 'service.html', {})
 
