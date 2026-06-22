@@ -140,8 +140,29 @@ def loggado_dentista(request):
         return redirect('signin_dentista')
     messages.get_messages(request).used = True
     dentist = request.user.dentist
-    appointments = Appointment.objects.filter(
-        dentist=dentist).order_by('-start_datetime')
+    appointments = Appointment.objects.filter(dentist=dentist)
+
+    status = request.GET.get('status')
+    periodo = request.GET.get('periodo')
+    busca = request.GET.get('busca', '').strip()
+
+    if status:
+        appointments = appointments.filter(status=status)
+    if periodo == 'hoje':
+        appointments = appointments.filter(start_datetime__date=date.today())
+    elif periodo == 'proximas':
+        appointments = appointments.filter(start_datetime__date__gte=date.today())
+    elif periodo == 'passadas':
+        appointments = appointments.filter(start_datetime__date__lt=date.today())
+    if busca:
+        from django.db.models import Q
+        appointments = appointments.filter(
+            Q(patient__user__first_name__icontains=busca) |
+            Q(patient__user__last_name__icontains=busca) |
+            Q(procedure__name__icontains=busca)
+        )
+
+    appointments = appointments.order_by('-start_datetime')
     return render(request, 'loggado_dentista.html', {
         'appointments': appointments,
         'AppointmentStatus': AppointmentStatus,
@@ -154,8 +175,29 @@ def loggado_paciente(request):
     if not request.user.is_authenticated:
         return redirect('signin')
     patient = request.user.patient
-    appointments = Appointment.objects.filter(
-        patient=patient).order_by('-start_datetime')
+    appointments = Appointment.objects.filter(patient=patient)
+
+    status = request.GET.get('status')
+    periodo = request.GET.get('periodo')
+    busca = request.GET.get('busca', '').strip()
+
+    if status:
+        appointments = appointments.filter(status=status)
+    if periodo == 'hoje':
+        appointments = appointments.filter(start_datetime__date=date.today())
+    elif periodo == 'proximas':
+        appointments = appointments.filter(start_datetime__date__gte=date.today())
+    elif periodo == 'passadas':
+        appointments = appointments.filter(start_datetime__date__lt=date.today())
+    if busca:
+        from django.db.models import Q
+        appointments = appointments.filter(
+            Q(dentist__user__first_name__icontains=busca) |
+            Q(dentist__user__last_name__icontains=busca) |
+            Q(procedure__name__icontains=busca)
+        )
+
+    appointments = appointments.order_by('-start_datetime')
     return render(request, 'loggado_paciente.html', {
         'appointments': appointments,
         'AppointmentStatus': AppointmentStatus,
