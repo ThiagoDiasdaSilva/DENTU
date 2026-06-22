@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -12,8 +13,8 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .alert-erro    { background:#fdecea; color:#c0392b; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
-    .alert-sucesso { background:#eafaf1; color:#1e8449; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
+    .alert-erro    { background:#fdecea; color:#842029; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
+    .alert-sucesso { background:#eafaf1; color:#0f5132; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:13px; }
 
     body { background:#f4f7fb; font-family:'Segoe UI',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
@@ -47,15 +48,32 @@
     .toggle input:checked + .toggle-slider { background:#1d6aba; }
     .toggle input:checked + .toggle-slider::before { transform:translateX(18px); }
 
-    .forgot-link { font-size:13px; color:#1d6aba; text-decoration:none; }
+    .forgot-link { font-size:13px; color:#1d6aba; text-decoration:none; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; }
     .forgot-link:hover { text-decoration:underline; }
 
     .btn-main { width:100%; padding:12px; background:#1d6aba; color:#fff; border:none; border-radius:6px; font-size:15px; font-weight:600; cursor:pointer; transition:background .2s; }
     .btn-main:hover { background:#155a9c; }
 
     .auth-footer { display:flex; justify-content:space-between; margin-top:20px; }
-    .auth-footer a { font-size:13px; color:#1d6aba; text-decoration:none; }
-    .auth-footer a:hover { text-decoration:underline; }
+    .auth-footer a, .auth-footer button.link-btn { font-size:13px; color:#1d6aba; text-decoration:none; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; }
+    .auth-footer a:hover, .auth-footer button.link-btn:hover { text-decoration:underline; }
+
+    /* Estilos para usar o elemento <dialog> nativo com comportamento similar ao Bootstrap modal */
+    dialog {
+      border: none;
+      border-radius: 10px;
+      padding: 0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      max-width: 500px;
+      width: 90%;
+      margin: auto; /* Centraliza na tela quando aberto com showModal() */
+    }
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.5); /* Fundo escuro */
+    }
+    .modal-content-wrapper {
+      padding: 10px;
+    }
   </style>
 </head>
 
@@ -85,7 +103,6 @@
         <div class="alert-sucesso">{{ sucesso }}</div>
       {% endif %}
 
-      <!-- Painel Login -->
       <div class="tab-panel active" id="panel-login">
         <form method="post" action="{% url 'signin' %}">
           {% csrf_token %}
@@ -99,26 +116,26 @@
             <label for="login-senha">Senha</label>
             <input type="password" id="login-senha" name="login-senha" placeholder="••••••••">
           </div>
+          
           <div class="form-extras">
-            <label class="toggle-wrap">
-              <label class="toggle">
-                <input type="checkbox" name="lembrar">
+            <div class="toggle-wrap">
+              <label class="toggle" for="lembrar-checkbox" aria-label="Lembrar de mim">
+                <input type="checkbox" name="lembrar" id="lembrar-checkbox">
                 <span class="toggle-slider"></span>
               </label>
-              Lembrar de mim
-            </label>
-            <a href="#" class="forgot-link" data-toggle="modal" data-target="#modalEsqueciSenha">Esqueci a senha</a>
+              <label for="lembrar-checkbox" style="margin-bottom: 0; cursor: pointer;">Lembrar de mim</label>
+            </div>
+            <button type="button" class="forgot-link" onclick="document.getElementById('modalEsqueciSenha').showModal()">Esqueci a senha</button>
           </div>
+
           <button type="submit" class="btn-main">Login</button>
         </form>
         <div class="auth-footer">
-          <a href="#" onclick="switchTab('cadastro', document.querySelectorAll('.auth-tabs button')[1]); return false;">Cadastre-se</a>
+          <button type="button" class="link-btn" onclick="switchTab('cadastro', document.querySelectorAll('.auth-tabs button')[1])">Cadastre-se</button>
           <a href="{% url 'signin_dentista' %}">Login para dentistas</a>
         </div>
       </div>
-      <!-- fim panel-login -->
-
-      <!-- Painel Cadastro -->
+      
       <div class="tab-panel" id="panel-cadastro">
         <form method="post" action="{% url 'signin' %}">
           {% csrf_token %}
@@ -150,35 +167,31 @@
           <button type="submit" class="btn-main">Criar conta</button>
         </form>
         <div class="auth-footer">
-          <a href="#" onclick="switchTab('login', document.querySelectorAll('.auth-tabs button')[0]); return false;">Já tenho conta</a>
+          <button type="button" class="link-btn" onclick="switchTab('login', document.querySelectorAll('.auth-tabs button')[0])">Já tenho conta</button>
         </div>
       </div>
-      <!-- fim panel-cadastro -->
-
-      <!-- Modal Esqueci a Senha -->
-      <div class="modal fade" id="modalEsqueciSenha" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content" style="border-radius:10px; padding:10px;">
-            <div class="modal-header border-0">
-              <h5 class="modal-title" style="font-weight:700; color:#222;">Recuperar senha</h5>
-              <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body">
-              <p style="font-size:14px; color:#666; margin-bottom:18px;">
-                Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.
-              </p>
-              <form method="post" action="#">
-                {% csrf_token %}
-                <div class="form-group">
-                  <label style="font-size:13px; font-weight:600;">E-mail</label>
-                  <input type="email" name="reset-email" class="form-control" placeholder="seu@email.com" style="border-radius:6px; font-size:14px;">
-                </div>
-                <button type="submit" class="btn-main" style="margin-top:8px;">Enviar link de recuperação</button>
-              </form>
-            </div>
+      
+      <dialog id="modalEsqueciSenha">
+        <div class="modal-content-wrapper">
+          <div class="modal-header border-0 d-flex justify-content-between align-items-center">
+            <h5 class="modal-title" style="font-weight:700; color:#222; margin:0;">Recuperar senha</h5>
+            <button type="button" class="close" onclick="document.getElementById('modalEsqueciSenha').close()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;"><span>&times;</span></button>
+          </div>
+          <div class="modal-body mt-3">
+            <p style="font-size:14px; color:#666; margin-bottom:18px;">
+              Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.
+            </p>
+            <form method="post" action="#">
+              {% csrf_token %}
+              <div class="form-group">
+                <label for="reset-email" style="font-size:13px; font-weight:600;">E-mail</label>
+                <input type="email" id="reset-email" name="reset-email" class="form-control" placeholder="seu@email.com" style="border-radius:6px; font-size:14px;">
+              </div>
+              <button type="submit" class="btn-main" style="margin-top:8px;">Enviar link de recuperação</button>
+            </form>
           </div>
         </div>
-      </div>
+      </dialog>
 
     </div>
   </div>
@@ -197,11 +210,11 @@
         let valido = true;
 
         inputs.forEach(input => {
-          if (!input.value.trim()) {
+          if (input.value.trim()) {
+            input.style.borderColor = '';
+          } else {
             input.style.borderColor = '#e74c3c';
             valido = false;
-          } else {
-            input.style.borderColor = '';
           }
         });
 
@@ -215,6 +228,13 @@
 
         if (!valido) e.preventDefault();
       });
+    });
+
+    const dialog = document.getElementById('modalEsqueciSenha');
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) {
+        dialog.close();
+      }
     });
   </script>
 

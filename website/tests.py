@@ -1,28 +1,37 @@
+
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 import json
+import os
 from unittest.mock import patch
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth.models import User
-from website.models import *
 
-_TEST_USER_PASSWORD = "TEXT_USER_PASSWORD"
-
+from website.models import (
+    Dentist, Patient, Procedure, Schedule, WeeklySchedule, DayOff,
+    Appointment, AppointmentDetails, Payment, DayOfWeek, AppointmentStatus,
+    PaymentMethod, PaymentStatus
+)
 
 class ModelTests(TestCase):
     @staticmethod
     def _create_dentist(username, first_name, license_number):
         user = User.objects.create_user(
-            username=username, first_name=first_name, password=_TEST_USER_PASSWORD
+            username=username,
+            first_name=first_name,
+            password=os.getenv("DJANGO_TEST_PASSWORD", "test123")
         )
         return Dentist.objects.create(user=user, license_number=license_number)
 
     @staticmethod
     def _create_patient(username, first_name, phone):
         user = User.objects.create_user(
-            username=username, first_name=first_name, password=_TEST_USER_PASSWORD
+            username=username,
+            first_name=first_name,
+            password=os.getenv("DJANGO_TEST_PASSWORD", "test123")
         )
         return Patient.objects.create(user=user, phone_number=phone)
 
@@ -52,7 +61,9 @@ class ModelTests(TestCase):
 
     def test_create_dentist(self):
         user = User.objects.create_user(
-            username="drjoao", first_name="João", password=_TEST_USER_PASSWORD
+            username="drjoao",
+            first_name="João",
+            password=os.getenv("DJANGO_TEST_PASSWORD", "test123")
         )
         dentist = Dentist.objects.create(
             user=user, license_number="12345", specialty="Ortodontia"
@@ -61,7 +72,9 @@ class ModelTests(TestCase):
 
     def test_create_patient(self):
         user = User.objects.create_user(
-            username="maria", first_name="Maria", password=_TEST_USER_PASSWORD
+            username="maria",
+            first_name="Maria",
+            password=os.getenv("DJANGO_TEST_PASSWORD", "test123")
         )
         patient = Patient.objects.create(
             user=user, phone_number="11999999999"
@@ -513,15 +526,11 @@ class ModelTests(TestCase):
         patient = self._create_patient("pagante", "Pagante", "55555555555")
         procedure = self._create_procedure("Limpeza", 45)
         tomorrow = date.today() + timedelta(days=1)
-        sched_start = timezone.make_aware(
-            datetime(tomorrow.year, tomorrow.month, tomorrow.day, 8, 0))
-        sched_end = timezone.make_aware(
-            datetime(tomorrow.year, tomorrow.month, tomorrow.day, 12, 0))
-        Schedule.objects.create(
-            dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
-        self.client.login(username="pagante", password=_TEST_USER_PASSWORD)
-        resp = self.client.get(
-            "/appointment/slots/", {"dentist": dentist.id, "procedure": procedure.id})
+        sched_start = timezone.make_aware(datetime(tomorrow.year, tomorrow.month, tomorrow.day, 8, 0))
+        sched_end = timezone.make_aware(datetime(tomorrow.year, tomorrow.month, tomorrow.day, 12, 0))
+        Schedule.objects.create(dentist=dentist, start_datetime=sched_start, end_datetime=sched_end)
+        self.client.login(username="pagante", password=os.getenv("DJANGO_TEST_PASSWORD", "test123"))
+        resp = self.client.get("/appointment/slots/", {"dentist": dentist.id, "procedure": procedure.id})
         data = json.loads(resp.content)
         slot_value = data["slots"][0]["value"]
         resp = self.client.post("/appointment/", {

@@ -1,3 +1,4 @@
+```html
 {% extends 'base.html' %}
 {% load static %}
 
@@ -5,7 +6,6 @@
 {% block meta_description %} Agendamento de consulta odontológica {% endblock %}
 {% block content %}
 
-<!-- ***** Breadcrumb Area Start ***** -->
 <div class="breadcumb-area bg-img bg-gradient-overlay" style="background-image: url({% static 'website/img/bg-img/12.jpg' %});">
   <div class="container h-100">
     <div class="row h-100 align-items-center">
@@ -29,9 +29,6 @@
     </div>
   </div>
 </div>
-<!-- ***** Breadcrumb Area End ***** -->
-
-<!-- ***** Appointment Area Start ***** -->
 <section class="dento-cta-area section-padding-100">
   <div class="container">
     <div class="row">
@@ -148,8 +145,6 @@
 
   </div>
 </section>
-<!-- ***** Appointment Area End ***** -->
-
 <br><br><br>
 
 <script>
@@ -194,10 +189,10 @@
         slotSelect.appendChild(defaultOpt);
 
         if (data.slots) {
-          for (var i = 0; i < data.slots.length; i++) {
+          for (const slot of data.slots) {
             var opt = document.createElement('option');
-            opt.value = data.slots[i].value;
-            opt.textContent = data.slots[i].label;
+            opt.value = slot.value;
+            opt.textContent = slot.label;
             slotSelect.appendChild(opt);
           }
         }
@@ -242,11 +237,11 @@
     procedureSelect.addEventListener('change', function() {
       var selected = procedureSelect.options[procedureSelect.selectedIndex];
       if (selected && selected.dataset.price && priceDiv && priceDisplay) {
-        var price = parseFloat(selected.dataset.price).toFixed(2);
+        var price = Number.parseFloat(selected.dataset.price).toFixed(2);
         priceDisplay.textContent = 'R$ ' + price;
         priceDiv.style.display = 'block';
-      } else {
-        if (priceDiv) priceDiv.style.display = 'none';
+      } else if (priceDiv) {
+        priceDiv.style.display = 'none';
       }
 
       var dId = dentistSelect ? dentistSelect.value : '';

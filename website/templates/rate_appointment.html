@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% load static %}
 
@@ -38,8 +39,8 @@
           {% csrf_token %}
 
           <div class="form-group">
-            <label><strong>Nota</strong></label>
-            <div class="star-rating" id="star-rating">
+            <div class="h6 mb-2"><strong>Nota</strong></div>
+            <div class="star-rating" id="star-rating" role="radiogroup" aria-label="Avaliação">
               {% for value, label in form.fields.rating.choices %}
               <input type="radio" name="rating" id="star{{ value }}" value="{{ value }}"
                 {% if form.rating.value|add:'0' == value %}checked{% endif %}
@@ -81,16 +82,16 @@
 
   function updateStars(value) {
     labels.forEach(function(lbl) {
-      var v = parseInt(lbl.getAttribute('data-value'));
+      var v = Number.parseInt(lbl.dataset.value, 10);
       lbl.classList.toggle('empty', v > value);
     });
   }
 
   labels.forEach(function(lbl) {
     lbl.addEventListener('mouseenter', function() {
-      var v = parseInt(this.getAttribute('data-value'));
+      var v = Number.parseInt(this.dataset.value, 10);
       labels.forEach(function(l) {
-        var lv = parseInt(l.getAttribute('data-value'));
+        var lv = Number.parseInt(l.dataset.value, 10);
         l.classList.toggle('empty', lv > v);
       });
     });
@@ -99,7 +100,7 @@
   rating.addEventListener('mouseleave', function() {
     var checked = rating.querySelector('input[name="rating"]:checked');
     if (checked) {
-      updateStars(parseInt(checked.value));
+      updateStars(Number.parseInt(checked.value, 10));
     } else {
       labels.forEach(function(l) { l.classList.remove('empty'); });
     }
@@ -107,12 +108,12 @@
 
   inputs.forEach(function(input) {
     input.addEventListener('change', function() {
-      updateStars(parseInt(this.value));
+      updateStars(Number.parseInt(this.value, 10));
     });
   });
 
   var checked = rating.querySelector('input[name="rating"]:checked');
-  if (checked) { updateStars(parseInt(checked.value)); }
+  if (checked) { updateStars(Number.parseInt(checked.value, 10)); }
 })();
 </script>
 

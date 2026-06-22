@@ -3,5 +3,6 @@ venv/
 __pycache__/
 *.pyc
 .venv/
-db.sqlite3
 .env
+venv38/
+.python-version

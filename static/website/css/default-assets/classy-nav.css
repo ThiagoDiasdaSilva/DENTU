@@ -147,7 +147,7 @@ img {
   font-style: normal;
 }
 .icon-classy-nav-down-arrow {
-  font-family: 'classyfonts';
+  font-family: 'classyfonts', sans-serif;
   speak: none;
   font-style: normal;
   font-weight: normal;
@@ -162,7 +162,7 @@ img {
 }
 .classynav ul li.megamenu-item>a:after,
 .classynav ul li.has-down>a:after {
-  font-family: 'classyfonts';
+  font-family: 'classyfonts', sans-serif;
   content: "\e900";
   font-size: 12px;
   color: #000000;

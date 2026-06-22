@@ -1,3 +1,4 @@
+
 from datetime import date, timedelta
 from django.http import JsonResponse
 from django.utils import timezone
@@ -9,7 +10,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.models import User
+from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.http import require_http_methods
+
 from website.forms import (
     AppointmentForm, PatientProfileForm, WeeklyScheduleForm, DentistProfileForm,
     AppointmentRatingForm, AppointmentDetailsForm,
@@ -19,20 +22,55 @@ from website.models import (
     Payment, PaymentMethod, PaymentStatus, WeeklySchedule,
 )
 
+# --- Funções Auxiliares de Autenticação (Refatoradas) ---
 
-@require_http_methods(["GET"])
+def _handle_registration(request):
+    nome = request.POST.get('user', '').strip()
+    email = request.POST.get('email', '').strip()
+    address = request.POST.get('address', '').strip()
+    date_of_birth = request.POST.get('date_of_birth', '').strip()
+    senha = request.POST.get('senha', '').strip()
+
+    if not all([nome, date_of_birth, address, email, senha]):
+        return "Preencha todos os campos", None
+    if User.objects.filter(username=nome).exists():
+        return "Usuário já cadastrado", None
+    if User.objects.filter(email=email).exists():
+        return "E-mail já cadastrado", None
+    
+    user = User.objects.create_user(username=nome, email=email, password=senha)
+    Patient.objects.create(
+        user=user,
+        address=address,
+        date_of_birth=date_of_birth,
+    )
+    return None, "Conta criada com sucesso, faça login"
+
+def _handle_login(request):
+    identificador = request.POST.get('login-email', '').strip()
+    senha = request.POST.get('login-senha', '')
+
+    try:
+        username = User.objects.get(email=identificador).username
+    except User.DoesNotExist:
+        return 'E-mail ou senha incorretos.', None
+
+    user = authenticate(request, username=username, password=senha)
+    if user is not None:
+        auth_login(request, user)
+        return None, user
+    
+    return 'E-mail ou senha incorretos.', None
+
+# --- Views ---
+
+@require_GET
 def index(request):
     if request.user.is_authenticated:
-        try:
-            request.user.patient
+        if hasattr(request.user, 'patient'):
             return redirect('loggado_paciente')
-        except Patient.DoesNotExist:
-            pass
-        try:
-            request.user.dentist
+        if hasattr(request.user, 'dentist'):
             return redirect('loggado_dentista')
-        except Dentist.DoesNotExist:
-            pass
     return render(request, 'index.html', {})
 
 
@@ -61,47 +99,12 @@ def signin(request):
 
     if request.method == 'POST':
         if 'cadastro' in request.POST:
-            nome = request.POST.get('user', '').strip()
-            email = request.POST.get('email', '').strip()
-            address = request.POST.get('address', '').strip()
-            date_of_birth = request.POST.get('date_of_birth', '').strip()
-            senha = request.POST.get('senha', '').strip()
-
-            if not all([nome, date_of_birth, address, email, senha]):
-                erro = "Preencha todos os campos"
-            elif User.objects.filter(username=nome).exists():
-                erro = "Usuário já cadastrado"
-            elif User.objects.filter(email=email).exists():
-                erro = "E-mail já cadastrado"
-            else:
-                user = User.objects.create_user(
-                    username=nome, email=email, password=senha)
-                Patient.objects.create(
-                    user=user,
-                    address=address,
-                    date_of_birth=date_of_birth,
-                )
-                sucesso = "Conta criada com sucesso, faça login"
-
+            erro, sucesso = _handle_registration(request)
         elif 'login' in request.POST:
-            identificador = request.POST.get('login-email', '').strip()
-            senha = request.POST.get('login-senha', '')
-
-            try:
-                username = User.objects.get(email=identificador).username
-            except User.DoesNotExist:
-                username = None
-
-            user = authenticate(request, username=username,
-                                password=senha) if username else None
-
-            if user is not None:
-                auth_login(request, user)
-                next_url = request.POST.get('next') or request.GET.get(
-                    'next') or 'loggado_paciente'
+            erro, user = _handle_login(request)
+            if user:
+                next_url = request.POST.get('next') or request.GET.get('next') or 'loggado_paciente'
                 return redirect(next_url)
-            else:
-                erro = 'E-mail ou senha incorretos.'
 
     return render(request, 'signin.html', {'erro': erro, 'sucesso': sucesso})
 
@@ -131,7 +134,7 @@ def signin_dentista(request):
     return render(request, 'signin_dentista.html', {'erro': erro})
 
 
-@require_http_methods(["GET"])
+@require_GET
 def loggado_dentista(request):
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
@@ -146,7 +149,7 @@ def loggado_dentista(request):
     })
 
 
-@require_http_methods(["GET"])
+@require_GET
 def loggado_paciente(request):
     if not request.user.is_authenticated:
         return redirect('signin')
@@ -159,9 +162,8 @@ def loggado_paciente(request):
     })
 
 
+@require_POST
 def cancel_appointment(request, appointment_id):
-    if request.method != 'POST':
-        return redirect('loggado_paciente')
     if not request.user.is_authenticated:
         return redirect('signin')
     try:
@@ -277,9 +279,8 @@ def dentist_profile(request):
     return render(request, 'dentist_profile.html', {'form': form})
 
 
+@require_POST
 def complete_appointment(request, appointment_id):
-    if request.method != 'POST':
-        return redirect('loggado_dentista')
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
     try:
@@ -293,9 +294,8 @@ def complete_appointment(request, appointment_id):
     return redirect('loggado_dentista')
 
 
+@require_POST
 def no_show_appointment(request, appointment_id):
-    if request.method != 'POST':
-        return redirect('loggado_dentista')
     if not request.user.is_authenticated or not hasattr(request.user, 'dentist'):
         return redirect('signin_dentista')
     try:
@@ -341,7 +341,7 @@ def dentist_appointment_details(request, appointment_id):
     })
 
 
-@require_http_methods(["GET"])
+@require_GET
 def patient_appointment_details(request, appointment_id):
     if not request.user.is_authenticated:
         return redirect('signin')
@@ -360,7 +360,7 @@ def patient_appointment_details(request, appointment_id):
     })
 
 
-@require_http_methods(["GET"])
+@require_GET
 def dentists_list(request):
     dentists = Dentist.objects.select_related('user').all()
     return render(request, 'dentists_list.html', {'dentists': dentists})
@@ -433,6 +433,7 @@ def appointment(request):
     })
 
 
+@require_GET
 def available_slots(request):
     try:
         dentist_id = request.GET.get('dentist')
