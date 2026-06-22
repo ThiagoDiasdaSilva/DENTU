@@ -1,10 +1,10 @@
 $(function () {
 
     // Get the form.
-    var form = $('#main_contact_form');
+    let form = $('#main_contact_form');
 
     // Get the messages div.
-    var formMessages = $('#success_fail_info');
+    let formMessages = $('#success_fail_info');
 
     // Set up an event listener for the contact form.
     $(form).submit(function (e) {
@@ -12,7 +12,7 @@ $(function () {
         e.preventDefault();
 
         // Serialize the form data.
-        var formData = $(form).serialize();
+        let formData = $(form).serialize();
 
         // Submit the form using AJAX.
         $.ajax({
@@ -39,7 +39,7 @@ $(function () {
                 $(formMessages).addClass('error');
 
                 // Set the message text.
-                if (data.responseText !== '') {
+                if (data.responseText) {
                     $(formMessages).text(data.responseText);
                 } else {
                     $(formMessages).text('Oops! An error occured.');

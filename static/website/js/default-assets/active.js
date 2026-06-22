@@ -1,6 +1,6 @@
 (function($) {
   'use strict';
-  var dento_window = $(window);
+  let dento_window = $(globalThis);
 
   // *******************************
   // :: 1.0 Preloader Active Code
@@ -25,7 +25,7 @@
   // ***********************************
 
   if($.fn.owlCarousel) {
-    var welcomeSlider = $('.welcome-slides');
+    let welcomeSlider = $('.welcome-slides');
     welcomeSlider.owlCarousel({
       items: 1,
       loop: true,
@@ -38,24 +38,24 @@
       animateOut: 'fadeOut'
     })
     welcomeSlider.on('translate.owl.carousel', function() {
-      var layer = $("[data-animation]");
+      let layer = $("[data-animation]");
       layer.each(function() {
-        var anim_name = $(this).data('animation');
+        let anim_name = $(this).data('animation');
         $(this).removeClass('animated ' + anim_name).css('opacity', '0');
       });
     });
     $("[data-delay]").each(function() {
-      var anim_del = $(this).data('delay');
+      let anim_del = $(this).data('delay');
       $(this).css('animation-delay', anim_del);
     });
     $("[data-duration]").each(function() {
-      var anim_dur = $(this).data('duration');
+      let anim_dur = $(this).data('duration');
       $(this).css('animation-duration', anim_dur);
     });
     welcomeSlider.on('translated.owl.carousel', function() {
-      var layer = welcomeSlider.find('.owl-item.active').find("[data-animation]");
+      let layer = welcomeSlider.find('.owl-item.active').find("[data-animation]");
       layer.each(function() {
-        var anim_name = $(this).data('animation');
+        let anim_name = $(this).data('animation');
         $(this).addClass('animated ' + anim_name).css('opacity', '1');
       });
     });
@@ -113,13 +113,13 @@
     $('.dento-portfolio').imagesLoaded(function() {
       // filter items on button click
       $('.portfolio-menu').on('click', 'button', function() {
-        var filterValue = $(this).attr('data-filter');
+        let filterValue = $(this).attr('data-filter');
         $grid.isotope({
           filter: filterValue
         });
       });
       // init Isotope
-      var $grid = $('.dento-portfolio').isotope({
+      let $grid = $('.dento-portfolio').isotope({
         itemSelector: '.single_gallery_item',
         percentPosition: true,
         masonry: {
@@ -170,33 +170,4 @@
       barColor: '#00aeef'
     });
   }
-
-  // // :: 14.0 onePageNav Active Code
-  // if ($.fn.onePageNav) {
-  //     $('#nav').onePageNav({
-  //         currentClass: 'active',
-  //         scrollSpeed: 1500,
-  //         easing: 'easeOutQuad'
-  //     });
-  // }
-  // // :: Animated Headline Active Code
-  // if ($.fn.animatedHeadline) {
-  //   $('.animated-ratate').animatedHeadline();
-  // }
-  //
-  // if ($.fn.animatedHeadline) {
-  //   $('.animated_Headline').animatedHeadline({
-  //   animationType: 'loading-bar'
-  //   });
-  // }
-  // // :: Accordian Active Code
-  //     var dd = $('dd');
-  //     dd.filter(':nth-child(n+3)').hide();
-  //     $('dl').on('click', 'dt', function () {
-  //         $(this).next().slideDown(500).siblings('dd').slideUp(500);
-  //     })
-  //     // :: PreventDefault a Click
-  //     $("a[href='#']").on('click', function ($) {
-  //         $.preventDefault();
-  //     });
 })(jQuery);
