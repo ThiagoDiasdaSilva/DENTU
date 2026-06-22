@@ -360,6 +360,7 @@ def patient_appointment_details(request, appointment_id):
     })
 
 
+@require_http_methods(["GET"])
 def dentists_list(request):
     dentists = Dentist.objects.select_related('user').all()
     return render(request, 'dentists_list.html', {'dentists': dentists})
