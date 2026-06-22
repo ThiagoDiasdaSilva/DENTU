@@ -210,7 +210,6 @@
         let valido = true;
 
         inputs.forEach(input => {
-          // CORREÇÃO: Condição afirmativa primeiro, evitando o uso do '!' como o SonarCloud exige
           if (input.value.trim()) {
             input.style.borderColor = '';
           } else {
@@ -231,7 +230,6 @@
       });
     });
 
-    // Fechar o dialog ao clicar fora dele (no backdrop)
     const dialog = document.getElementById('modalEsqueciSenha');
     dialog.addEventListener('click', (event) => {
       if (event.target === dialog) {
