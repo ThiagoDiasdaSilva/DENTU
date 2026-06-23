@@ -24,6 +24,29 @@
     <div class="row">
       <div class="col-12">
         <h4>Minhas Consultas</h4>
+
+        <form method="get" class="form-inline mb-3">
+          <select name="status" class="form-control mr-2 mb-2">
+            <option value="">Todos os status</option>
+            <option value="1" {% if request.GET.status == '1' %}selected{% endif %}>Agendado</option>
+            <option value="2" {% if request.GET.status == '2' %}selected{% endif %}>Concluído</option>
+            <option value="3" {% if request.GET.status == '3' %}selected{% endif %}>Cancelado</option>
+            <option value="4" {% if request.GET.status == '4' %}selected{% endif %}>Faltou</option>
+          </select>
+
+          <select name="periodo" class="form-control mr-2 mb-2">
+            <option value="">Todas</option>
+            <option value="hoje" {% if request.GET.periodo == 'hoje' %}selected{% endif %}>Hoje</option>
+            <option value="proximas" {% if request.GET.periodo == 'proximas' %}selected{% endif %}>Próximas</option>
+            <option value="passadas" {% if request.GET.periodo == 'passadas' %}selected{% endif %}>Passadas</option>
+          </select>
+
+          <input type="text" name="busca" class="form-control mr-2 mb-2" placeholder="Paciente ou procedimento..." value="{{ request.GET.busca|default:'' }}">
+
+          <button type="submit" class="btn dento-btn mb-2">Filtrar</button>
+          <a href="{% url 'loggado_dentista' %}" class="btn btn-secondary mb-2 ml-2">Limpar</a>
+        </form>
+
         {% if appointments %}
         <div class="table-responsive">
           <table class="table table-bordered table-hover">

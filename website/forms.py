@@ -2,7 +2,7 @@ from django import forms
 
 from website.models import (
     Dentist, Patient, Procedure, PaymentMethod, WeeklySchedule, AppointmentRating,
-    AppointmentDetails,
+    AppointmentDetails, SupportMessage,
 )
 
 
@@ -141,4 +141,20 @@ class AppointmentDetailsForm(forms.ModelForm):
             'diagnosis': forms.Textarea(attrs={'rows': 3}),
             'prescription': forms.Textarea(attrs={'rows': 3}),
             'notes': forms.Textarea(attrs={'rows': 3}),
+        }
+
+
+class SupportMessageForm(forms.ModelForm):
+    class Meta:
+        model = SupportMessage
+        fields = ['name', 'email', 'phone', 'subject', 'message']
+        labels = {
+            'name': 'Nome',
+            'email': 'Email',
+            'phone': 'Telefone (opcional)',
+            'subject': 'Assunto',
+            'message': 'Mensagem',
+        }
+        widgets = {
+            'message': forms.Textarea(attrs={'rows': 5}),
         }

@@ -15,7 +15,7 @@ from django.views.decorators.http import require_http_methods
 
 from website.forms import (
     AppointmentForm, PatientProfileForm, WeeklyScheduleForm, DentistProfileForm,
-    AppointmentRatingForm, AppointmentDetailsForm,
+    AppointmentRatingForm, AppointmentDetailsForm, SupportMessageForm,
 )
 from website.models import (
     Appointment, AppointmentRating, AppointmentStatus, Dentist, Patient, Procedure,
@@ -140,8 +140,29 @@ def loggado_dentista(request):
         return redirect('signin_dentista')
     messages.get_messages(request).used = True
     dentist = request.user.dentist
-    appointments = Appointment.objects.filter(
-        dentist=dentist).order_by('-start_datetime')
+    appointments = Appointment.objects.filter(dentist=dentist)
+
+    status = request.GET.get('status')
+    periodo = request.GET.get('periodo')
+    busca = request.GET.get('busca', '').strip()
+
+    if status:
+        appointments = appointments.filter(status=status)
+    if periodo == 'hoje':
+        appointments = appointments.filter(start_datetime__date=date.today())
+    elif periodo == 'proximas':
+        appointments = appointments.filter(start_datetime__date__gte=date.today())
+    elif periodo == 'passadas':
+        appointments = appointments.filter(start_datetime__date__lt=date.today())
+    if busca:
+        from django.db.models import Q
+        appointments = appointments.filter(
+            Q(patient__user__first_name__icontains=busca) |
+            Q(patient__user__last_name__icontains=busca) |
+            Q(procedure__name__icontains=busca)
+        )
+
+    appointments = appointments.order_by('-start_datetime')
     return render(request, 'loggado_dentista.html', {
         'appointments': appointments,
         'AppointmentStatus': AppointmentStatus,
@@ -154,8 +175,29 @@ def loggado_paciente(request):
     if not request.user.is_authenticated:
         return redirect('signin')
     patient = request.user.patient
-    appointments = Appointment.objects.filter(
-        patient=patient).order_by('-start_datetime')
+    appointments = Appointment.objects.filter(patient=patient)
+
+    status = request.GET.get('status')
+    periodo = request.GET.get('periodo')
+    busca = request.GET.get('busca', '').strip()
+
+    if status:
+        appointments = appointments.filter(status=status)
+    if periodo == 'hoje':
+        appointments = appointments.filter(start_datetime__date=date.today())
+    elif periodo == 'proximas':
+        appointments = appointments.filter(start_datetime__date__gte=date.today())
+    elif periodo == 'passadas':
+        appointments = appointments.filter(start_datetime__date__lt=date.today())
+    if busca:
+        from django.db.models import Q
+        appointments = appointments.filter(
+            Q(dentist__user__first_name__icontains=busca) |
+            Q(dentist__user__last_name__icontains=busca) |
+            Q(procedure__name__icontains=busca)
+        )
+
+    appointments = appointments.order_by('-start_datetime')
     return render(request, 'loggado_paciente.html', {
         'appointments': appointments,
         'AppointmentStatus': AppointmentStatus,
@@ -364,6 +406,24 @@ def patient_appointment_details(request, appointment_id):
 def dentists_list(request):
     dentists = Dentist.objects.select_related('user').all()
     return render(request, 'dentists_list.html', {'dentists': dentists})
+
+
+def support(request):
+    if request.method == 'POST':
+        form = SupportMessageForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Mensagem enviada com sucesso!")
+            return redirect('support')
+    else:
+        initial = {}
+        if request.user.is_authenticated:
+            initial['name'] = request.user.get_full_name() or request.user.username
+            initial['email'] = request.user.email
+            if hasattr(request.user, 'patient'):
+                initial['phone'] = request.user.patient.phone_number
+        form = SupportMessageForm(initial=initial)
+    return render(request, 'support.html', {'form': form})
 
 
 @require_http_methods(["GET"])
