@@ -15,7 +15,7 @@ from django.views.decorators.http import require_http_methods
 
 from website.forms import (
     AppointmentForm, PatientProfileForm, WeeklyScheduleForm, DentistProfileForm,
-    AppointmentRatingForm, AppointmentDetailsForm,
+    AppointmentRatingForm, AppointmentDetailsForm, SupportMessageForm,
 )
 from website.models import (
     Appointment, AppointmentRating, AppointmentStatus, Dentist, Patient, Procedure,
@@ -406,6 +406,24 @@ def patient_appointment_details(request, appointment_id):
 def dentists_list(request):
     dentists = Dentist.objects.select_related('user').all()
     return render(request, 'dentists_list.html', {'dentists': dentists})
+
+
+def support(request):
+    if request.method == 'POST':
+        form = SupportMessageForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Mensagem enviada com sucesso!")
+            return redirect('support')
+    else:
+        initial = {}
+        if request.user.is_authenticated:
+            initial['name'] = request.user.get_full_name() or request.user.username
+            initial['email'] = request.user.email
+            if hasattr(request.user, 'patient'):
+                initial['phone'] = request.user.patient.phone_number
+        form = SupportMessageForm(initial=initial)
+    return render(request, 'support.html', {'form': form})
 
 
 @require_http_methods(["GET"])

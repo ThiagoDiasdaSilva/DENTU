@@ -9,6 +9,7 @@ from .models import (
     Appointment,
     AppointmentDetails,
     Payment,
+    SupportMessage,
 )
 
 
@@ -76,3 +77,11 @@ class AppointmentDetailsAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('appointment', 'amount', 'method', 'status', 'payment_date')
     list_filter = ('status', 'method')
+
+
+@admin.register(SupportMessage)
+class SupportMessageAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'subject', 'created_at', 'resolved')
+    list_filter = ('resolved', 'created_at')
+    search_fields = ('name', 'email', 'subject', 'message')
+    list_editable = ('resolved',)

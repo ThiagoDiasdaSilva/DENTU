@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Suporte{% endblock %}
+{% block content %}
+
+<section class="dento-cta-area section-padding-100">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12">
+
+        <!-- Breadcrumb e título -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Suporte</h2>
+          <a href="/" class="btn btn-secondary">Voltar</a>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="row">
+          <!-- FAQ -->
+          <div class="col-12 col-md-6">
+            <h4>Perguntas Frequentes (FAQ)</h4>
+
+            <div class="accordion" id="faq">
+
+              <div class="card mb-2">
+                <div class="card-header" id="faq1">
+                  <h5 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#faq1a" aria-expanded="true">
+                      Como faço para agendar uma consulta?
+                    </button>
+                  </h5>
+                </div>
+                <div id="faq1a" class="collapse show" data-parent="#faq">
+                  <div class="card-body">
+                    Faça login como paciente, vá até o painel e clique em "Agendar Consulta". Escolha o dentista, procedimento, horário e forma de pagamento.
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-2">
+                <div class="card-header" id="faq2">
+                  <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#faq2a">
+                      Como cancelo uma consulta?
+                    </button>
+                  </h5>
+                </div>
+                <div id="faq2a" class="collapse" data-parent="#faq">
+                  <div class="card-body">
+                    No painel do paciente, encontre a consulta agendada e clique em "Cancelar". Confirme a ação e a consulta será marcada como cancelada.
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-2">
+                <div class="card-header" id="faq3">
+                  <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#faq3a">
+                      Como funcionam os pagamentos?
+                    </button>
+                  </h5>
+                </div>
+                <div id="faq3a" class="collapse" data-parent="#faq">
+                  <div class="card-body">
+                    O pagamento é feito presencialmente no consultório. Ao agendar, você informa a forma de pagamento desejada. No dia da consulta, a secretária confirma o pagamento no sistema.
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-2">
+                <div class="card-header" id="faq4">
+                  <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#faq4a">
+                      Posso avaliar meu dentista?
+                    </button>
+                  </h5>
+                </div>
+                <div id="faq4a" class="collapse" data-parent="#faq">
+                  <div class="card-body">
+                    Sim! Após a consulta ser concluída, você pode avaliar o dentista com 1 a 5 estrelas e deixar um comentário opcional no painel do paciente.
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-2">
+                <div class="card-header" id="faq5">
+                  <h5 class="mb-0">
+                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#faq5a">
+                      Como edito meu perfil?
+                    </button>
+                  </h5>
+                </div>
+                <div id="faq5a" class="collapse" data-parent="#faq">
+                  <div class="card-body">
+                    No painel do paciente, clique em "Meu Perfil". Lá você pode alterar seu nome, email, telefone, data de nascimento e endereço.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário de contato -->
+          <div class="col-12 col-md-6">
+            <h4>Fale Conosco</h4>
+            <p>Não encontrou sua dúvida? Envie uma mensagem para nossa equipe. Nós entraremos em contato por telefone ou e-mail!</p>
+
+            <form method="post">
+              {% csrf_token %}
+
+              <div class="form-group">
+                <label for="id_name">Nome</label>
+                <input type="text" name="name" id="id_name" class="form-control" value="{{ form.name.value|default:'' }}" required maxlength="100">
+              </div>
+
+              <div class="form-group">
+                <label for="id_email">Email</label>
+                <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value|default:'' }}" required>
+                {% if form.email.errors %}<small class="text-danger">{{ form.email.errors|striptags }}</small>{% endif %}
+              </div>
+
+              <div class="form-group">
+                <label for="id_phone">Telefone (opcional)</label>
+                <input type="text" name="phone" id="id_phone" class="form-control" value="{{ form.phone.value|default:'' }}" maxlength="20">
+              </div>
+
+              <div class="form-group">
+                <label for="id_subject">Assunto</label>
+                <input type="text" name="subject" id="id_subject" class="form-control" value="{{ form.subject.value|default:'' }}" required maxlength="200">
+                {% if form.subject.errors %}<small class="text-danger">{{ form.subject.errors|striptags }}</small>{% endif %}
+              </div>
+
+              <div class="form-group">
+                <label for="id_message">Mensagem</label>
+                <textarea name="message" id="id_message" class="form-control" rows="5" required>{{ form.message.value|default:'' }}</textarea>
+                {% if form.message.errors %}<small class="text-danger">{{ form.message.errors|striptags }}</small>{% endif %}
+              </div>
+
+              <button type="submit" class="btn dento-btn">Enviar</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

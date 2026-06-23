@@ -27,4 +27,5 @@ urlpatterns = [
 	path('dentista/consulta/<int:appointment_id>/concluir/', views.complete_appointment, name='complete_appointment'),
 	path('dentista/consulta/<int:appointment_id>/faltou/', views.no_show_appointment, name='no_show_appointment'),
 	path('dentista/consulta/<int:appointment_id>/detalhes/', views.dentist_appointment_details, name='dentist_appointment_details'),
+	path('suporte/', views.support, name='support'),
 ]
